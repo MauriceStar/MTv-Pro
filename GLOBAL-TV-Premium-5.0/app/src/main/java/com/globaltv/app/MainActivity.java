@@ -487,26 +487,34 @@ public class MainActivity extends AppCompatActivity {
         };
     }
     private void parseM3uHttpOption(String line,Map<String,String> headers){
-    if(line==null||headers==null)return;
-    try{
-        if(line.startsWith("#EXTVLCOPT:")){
-            String option=line.substring(11).trim();int split=option.indexOf('=');if(split<=0)return;
-            String key=option.substring(0,split).trim().toLowerCase(Locale.ROOT);String value=option.substring(split+1).trim();
-            if(key.equals("http-user-agent"))putM3uHeader(headers,"User-Agent",value);
-            else if(key.equals("http-referrer")||key.equals("http-referer"))putM3uHeader(headers,"Referer",value);
-        }else if(line.startsWith("#EXTHTTP:")){
-            JSONObject json=new JSONObject(line.substring(9).trim());java.util.Iterator<String> keys=json.keys();
-            while(keys.hasNext()){String key=keys.next();String lower=key.toLowerCase(Locale.ROOT);
-                if(lower.equals("user-agent"))putM3uHeader(headers,"User-Agent",json.optString(key,""));
-                else if(lower.equals("referer")||lower.equals("referrer"))putM3uHeader(headers,"Referer",json.optString(key,""));}
-        }
-    }catch(Exception ignored){}
-}
-private void putM3uHeader(Map<String,String> headers,String name,String value){
-    if(value==null||value.isEmpty()||value.length()>2048||value.indexOf('\r')>=0||value.indexOf('\n')>=0)return;
-    headers.put(name,value);
-}
-private int appendM3uPlaylist(String address,ArrayList<MediaEntry> merged,int request)throws Exception{
+        if(line==null||headers==null)return;
+        try{
+            if(line.startsWith("#EXTVLCOPT:")){
+                String option=line.substring(11).trim();int split=option.indexOf('=');if(split<=0)return;
+                String key=option.substring(0,split).trim().toLowerCase(Locale.ROOT);String value=option.substring(split+1).trim();
+                if(key.equals("http-user-agent"))putM3uHeader(headers,"User-Agent",value);
+                else if(key.equals("http-referrer")||key.equals("http-referer"))putM3uHeader(headers,"Referer",value);
+                else if(key.equals("http-cookie"))putM3uHeader(headers,"Cookie",value);
+                else if(key.equals("http-origin"))putM3uHeader(headers,"Origin",value);
+                else if(key.equals("http-authorization"))putM3uHeader(headers,"Authorization",value);
+            }else if(line.startsWith("#EXTHTTP:")){
+                JSONObject json=new JSONObject(line.substring(9).trim());java.util.Iterator<String> keys=json.keys();
+                while(keys.hasNext()){
+                    String key=keys.next();String lower=key.toLowerCase(Locale.ROOT);String headerValue=json.optString(key,"");
+                    if(lower.equals("user-agent"))putM3uHeader(headers,"User-Agent",headerValue);
+                    else if(lower.equals("referer")||lower.equals("referrer"))putM3uHeader(headers,"Referer",headerValue);
+                    else if(lower.equals("cookie"))putM3uHeader(headers,"Cookie",headerValue);
+                    else if(lower.equals("origin"))putM3uHeader(headers,"Origin",headerValue);
+                    else if(lower.equals("authorization"))putM3uHeader(headers,"Authorization",headerValue);
+                }
+            }
+        }catch(Exception ignored){}
+    }
+    private void putM3uHeader(Map<String,String> headers,String name,String value){
+        if(value==null||value.isEmpty()||value.length()>2048||value.indexOf('\\r')>=0||value.indexOf('\\n')>=0)return;
+        headers.put(name,value);
+    }
+    private int appendM3uPlaylist(String address,ArrayList<MediaEntry> merged,int request)throws Exception{
  HttpURLConnection connection=open(address);
  try{
   int code=connection.getResponseCode();if(code<200||code>=300)throw new IOException("Serveur HTTP "+code);
