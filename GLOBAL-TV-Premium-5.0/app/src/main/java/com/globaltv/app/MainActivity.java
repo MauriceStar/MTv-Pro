@@ -28,6 +28,7 @@ import org.json.*;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.activity.OnBackPressedCallback;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         String name,url,group,logo,type,id,container,tvgId;
         MediaEntry(String n,String u,String g,String l,String t){name=n;url=u;group=g;logo=l;type=t;id="";container="m3u8";tvgId="";}
     }
-    @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);prefs=getPreferences(0);
+    @Override public void onCreate(Bundle b){super.onCreate(b);installBackNavigation();getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);prefs=getPreferences(0);
         activeProfile=prefs.getString("active_profile",PROFILE_ADULT);
         configureMemoryBudget();
         favorites.addAll(prefs.getStringSet("favorites",new HashSet<>()));for(String group:prefs.getStringSet("favorite_groups",new HashSet<>()))favoriteGroups.put(group,new LinkedHashSet<>(prefs.getStringSet("favorite_group_"+key(group),new HashSet<>())));playlistSources.addAll(prefs.getStringSet("m3u_sources",new LinkedHashSet<>()));
@@ -677,7 +678,22 @@ private void showPinEditor(){
     private void showPlaylistManager(){ArrayList<String> urls=new ArrayList<>(playlistSources);if(urls.isEmpty()){new AlertDialog.Builder(this).setTitle("Sources M3U").setMessage("Aucune source enregistrée.").setPositiveButton("Ajouter", (d,w)->showM3uDialog()).show();return;}String[] labels=new String[urls.size()];for(int i=0;i<urls.size();i++)labels[i]=(i+1)+". "+Uri.parse(urls.get(i)).getHost()+" — "+urls.get(i);new AlertDialog.Builder(this).setTitle("Sources M3U • "+urls.size()).setItems(labels,(d,which)->new AlertDialog.Builder(this).setTitle("Gérer cette source").setMessage(urls.get(which)).setNegativeButton("Fermer",null).setNeutralButton("Supprimer",(a,b)->{playlistSources.remove(urls.get(which));prefs.edit().putStringSet("m3u_sources",new HashSet<>(playlistSources)).apply();loadAllPlaylists();}).setPositiveButton("Recharger",(a,b)->loadPlaylist(urls.get(which))).show()).setPositiveButton("Ajouter une source",(d,w)->showM3uDialog()).setNegativeButton("Fermer",null).show();}
     private void showXtreamDialog(){LinearLayout form=column();form.setPadding(dp(8),dp(4),dp(8),dp(4));EditText host=field("URL du serveur (https://serveur:port)");EditText user=field("Nom d’utilisateur");EditText pass=field("Mot de passe");pass.setInputType(129);form.addView(host);form.addView(user);form.addView(pass);new AlertDialog.Builder(this).setTitle("Connexion Xtream Codes").setMessage("Utilise les identifiants fournis par ton fournisseur IPTV autorisé. HTTPS est recommandé.").setView(form).setNegativeButton("Annuler",null).setPositiveButton("Se connecter",(d,w)->{String h=host.getText().toString().trim(),u=user.getText().toString().trim(),p=pass.getText().toString();try{Uri uri=Uri.parse(h);if((!"https".equalsIgnoreCase(uri.getScheme())&&!("http".equalsIgnoreCase(uri.getScheme())))||uri.getHost()==null||u.isEmpty()||p.isEmpty())throw new Exception();xtreamBase=h;xtreamUser=u;xtreamPass=p;section="ACCUEIL";heading.setText("Bienvenue sur GLOBAL TV");loadXtream();}catch(Exception e){Toast.makeText(this,"Vérifie l’URL et les identifiants",Toast.LENGTH_LONG).show();}}).show();}
     private EditText field(String hint){EditText e=new EditText(this);e.setSingleLine(true);e.setTextColor(Color.WHITE);e.setHintTextColor(MUTED);e.setHint(hint);e.setPadding(dp(10),dp(6),dp(10),dp(6));return e;}
-    @Override public boolean dispatchKeyEvent(android.view.KeyEvent event){if(event.getAction()==KeyEvent.ACTION_DOWN&&event.getKeyCode()==KeyEvent.KEYCODE_BACK&&playerView!=null){if(playerFullscreen){togglePlayerExpanded();return true;}savePlaybackPosition();releasePlayer();status.setText("Lecture fermée");return true;}return super.dispatchKeyEvent(event);}
+    private void installBackNavigation(){
+        getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){
+            @Override public void handleOnBackPressed(){if(!handleBackAction())finish();}
+        });
+    }
+    private boolean handleBackAction(){
+        if(playerView!=null){
+            if(playerFullscreen){togglePlayerExpanded();return true;}
+            savePlaybackPosition();releasePlayer();status.setText("Lecture fermée");return true;
+        }
+        return false;
+    }
+    @Override public boolean dispatchKeyEvent(android.view.KeyEvent event){
+        if(event.getAction()==KeyEvent.ACTION_DOWN&&event.getKeyCode()==KeyEvent.KEYCODE_BACK&&handleBackAction())return true;
+        return super.dispatchKeyEvent(event);
+    }
     @Override public void onTrimMemory(int level){
         super.onTrimMemory(level);
         if(level>=TRIM_MEMORY_RUNNING_LOW){
