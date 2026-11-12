@@ -1545,8 +1545,25 @@ private void showPinEditor(){
             catch(Exception secureError){android.util.Log.e("GLOBALTV","Impossible de protéger l’URL de reprise",secureError);}
         }
     }
-    @Override protected void onStart(){super.onStart();registerNetworkMonitor();if(resumePlaybackOnStart&&player!=null){resumePlaybackOnStart=false;player.play();}if(player!=null){startPlaybackPositionSaver(player);if(player.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(player,currentEntry);}}
-    @Override protected void onStop(){unregisterNetworkMonitor();stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.getPlayWhenReady();savePlaybackPosition();stopPlaybackPositionSaver();player.pause();}}
+    @Override protected void onStart(){
+        super.onStart();registerNetworkMonitor();
+        ExoPlayer activePlayer=player;
+        if(activePlayer==null||destroyed)return;
+        try{
+            if(resumePlaybackOnStart){resumePlaybackOnStart=false;activePlayer.play();}
+            if(player==activePlayer){startPlaybackPositionSaver(activePlayer);if(activePlayer.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(activePlayer,currentEntry);}
+        }catch(RuntimeException playerStateError){
+            android.util.Log.w("GLOBALTV","Reprise du lecteur impossible au démarrage",playerStateError);
+            stopPlaybackPositionSaver();stopBufferingWatchdog(activePlayer);
+        }
+    }
+    @Override protected void onStop(){
+        unregisterNetworkMonitor();stopBufferingWatchdog(null);super.onStop();
+        ExoPlayer activePlayer=player;
+        if(activePlayer==null)return;
+        try{resumePlaybackOnStart=activePlayer.getPlayWhenReady();savePlaybackPosition();stopPlaybackPositionSaver();activePlayer.pause();}
+        catch(RuntimeException playerStateError){android.util.Log.w("GLOBALTV","Mise en pause du lecteur impossible à l’arrêt",playerStateError);stopPlaybackPositionSaver();}
+    }
     @Override protected void onDestroy(){
         destroyed=true;
         catalogRequestId++;
