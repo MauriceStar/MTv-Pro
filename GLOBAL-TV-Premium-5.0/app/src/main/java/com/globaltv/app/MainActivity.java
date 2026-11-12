@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
     private final Set<String> approvedInsecureStreamHosts=new HashSet<>();
     private Runnable bufferingWatchdog;
     private ExoPlayer bufferingWatchdogPlayer;
+    private Runnable playbackPositionSaver;
     private android.net.ConnectivityManager connectivityManager;
     private android.net.ConnectivityManager.NetworkCallback networkCallback;
     private boolean networkCallbackRegistered=false,networkUnavailable=false;
@@ -433,6 +434,7 @@ public class MainActivity extends AppCompatActivity {
         if(playerArea!=null)playerArea.setOrientation(LinearLayout.HORIZONTAL);if(catalogScroll!=null&&catalogScroll.getParent()!=playerArea)playerArea.addView(catalogScroll,new LinearLayout.LayoutParams(-1,-1));
         if(playerToolbar!=null){if(playerToolbar.getParent() instanceof ViewGroup)((ViewGroup)playerToolbar.getParent()).removeView(playerToolbar);playerToolbar=null;}if(playerArea!=null){for(int i=playerArea.getChildCount()-1;i>=0;i--){View child=playerArea.getChildAt(i);if(child instanceof LinearLayout&&child!=catalogScroll&&((LinearLayout)child).getChildCount()==0)playerArea.removeViewAt(i);}}
         stopBufferingWatchdog(null);
+        stopPlaybackPositionSaver();
         if(player!=null){try{player.release();}catch(Exception ignored){}player=null;}
     }
     private HttpURLConnection open(String address)throws Exception{
@@ -1007,6 +1009,7 @@ private void loadAllPlaylists(){
             activePlayer.setMediaSource(playlistSource);activePlayer.seekTo(startIndex,resumePosition);activePlayer.prepare();activePlayer.play();
             status.setText("Lecture : "+c.name);
             applyRestoredPlayerState();
+            startPlaybackPositionSaver(activePlayer);
         }catch(Exception e){releasePlayer();Toast.makeText(this,"Impossible de lancer ce flux",Toast.LENGTH_LONG).show();}
     }
 
@@ -1266,7 +1269,20 @@ private void showPinEditor(){
 }
     private String hash(String value){try{byte[] b=MessageDigest.getInstance("SHA-256").digest(value.getBytes("UTF-8"));StringBuilder out=new StringBuilder();for(byte x:b)out.append(String.format(Locale.US,"%02x",x));return out.toString();}catch(Exception e){return value;}}
     private String key(String value){return hash(value).substring(0,24);}
-    private void savePlaybackPosition(){if(player!=null&&!lastPlayedUrl.isEmpty()){long pos=player.getCurrentPosition();if(pos>0)prefs.edit().putLong("position_"+key(lastPlayedUrl),pos).apply();}}
+    private void savePlaybackPosition(){if(player!=null&&currentEntry!=null&&currentEntry.url!=null&&!currentEntry.url.isEmpty()){long pos=player.getCurrentPosition();if(pos>0)prefs.edit().putLong("position_"+key(currentEntry.url),pos).apply();}}
+    private void stopPlaybackPositionSaver(){if(playbackPositionSaver!=null)mainHandler.removeCallbacks(playbackPositionSaver);playbackPositionSaver=null;}
+    private void startPlaybackPositionSaver(ExoPlayer activePlayer){
+        stopPlaybackPositionSaver();
+        if(activePlayer==null||destroyed)return;
+        playbackPositionSaver=new Runnable(){
+            @Override public void run(){
+                if(destroyed||player!=activePlayer||currentEntry==null){playbackPositionSaver=null;return;}
+                savePlaybackPosition();
+                mainHandler.postDelayed(this,10000L);
+            }
+        };
+        mainHandler.postDelayed(playbackPositionSaver,10000L);
+    }
     private void showCreateFavoriteGroup(){EditText name=field("Nom de la liste");new AlertDialog.Builder(this).setTitle("Créer une liste de favoris").setView(name).setNegativeButton("Annuler",null).setPositiveButton("Créer",(d,w)->{String n=name.getText().toString().trim();if(n.isEmpty())return;if(favoriteGroups.containsKey(n)){Toast.makeText(this,"Cette liste existe déjà",Toast.LENGTH_SHORT).show();return;}favoriteGroups.put(n,new LinkedHashSet<>());prefs.edit().putStringSet("favorite_groups",new HashSet<>(favoriteGroups.keySet())).apply();activeFilter=n;updateChips();renderList();}).show();}
     private void showAssignFavoriteGroup(MediaEntry entry){if(favoriteGroups.isEmpty()){Toast.makeText(this,"Crée d’abord une liste de favoris.",Toast.LENGTH_SHORT).show();return;}String[] names=favoriteGroups.keySet().toArray(new String[0]);new AlertDialog.Builder(this).setTitle("Ajouter à une liste").setItems(names,(d,i)->{Set<String> urls=favoriteGroups.get(names[i]);urls.add(entry.url);putSecureStringSet("favorite_group_"+key(names[i]),new HashSet<>(urls));Toast.makeText(this,"Ajouté à "+names[i],Toast.LENGTH_SHORT).show();}).setNegativeButton("Annuler",null).show();}
     private boolean isInsecureStreamHostApproved(String address){
@@ -1427,8 +1443,8 @@ private void showPinEditor(){
         if(catalogScroll!=null)outState.putInt("session_catalog_scroll",catalogScroll.getScrollY());
         if(player!=null&&currentEntry!=null){long position=player.getCurrentPosition();try{outState.putString("session_player_url",encryptLocalValue(currentEntry.url,"session_player_url"));}catch(Exception secureError){android.util.Log.e("GLOBALTV","Impossible de protéger l’URL de reprise",secureError);}outState.putString("session_player_name",currentEntry.name==null?"Reprise":currentEntry.name);outState.putString("session_player_group",currentEntry.group==null?"Reprise":currentEntry.group);outState.putLong("session_player_position",position);outState.putBoolean("session_player_playing",player.getPlayWhenReady()||resumePlaybackOnStart);outState.putBoolean("session_player_fullscreen",playerFullscreen);if(position>0L)prefs.edit().putLong("position_"+key(currentEntry.url),position).apply();}
     }
-    @Override protected void onStart(){super.onStart();registerNetworkMonitor();if(resumePlaybackOnStart&&player!=null){resumePlaybackOnStart=false;player.play();}if(player!=null&&player.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(player,currentEntry);}
-    @Override protected void onStop(){unregisterNetworkMonitor();stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.getPlayWhenReady();savePlaybackPosition();player.pause();}}
+    @Override protected void onStart(){super.onStart();registerNetworkMonitor();if(resumePlaybackOnStart&&player!=null){resumePlaybackOnStart=false;player.play();}if(player!=null){startPlaybackPositionSaver(player);if(player.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(player,currentEntry);}}
+    @Override protected void onStop(){unregisterNetworkMonitor();stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.getPlayWhenReady();savePlaybackPosition();stopPlaybackPositionSaver();player.pause();}}
     @Override protected void onDestroy(){
         destroyed=true;
         catalogRequestId++;
