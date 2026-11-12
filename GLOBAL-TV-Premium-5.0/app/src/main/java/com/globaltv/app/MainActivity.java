@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     private String restorePlaybackUrl="",restorePlaybackName="";
     private long restorePlaybackPosition=0L;
     private boolean restorePlaybackWasPlaying=true,restorePlayerFullscreen=false;
+    private boolean pendingPlayerStateRestore=false;
     
 
     static class MediaEntry {
@@ -225,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
         playlistSources.addAll(Arrays.asList(BUILT_IN_PLAYLISTS));
         putSecureStringSet("m3u_sources",new LinkedHashSet<>(playlistSources));
         epgUrl=getSecureString("epg_url","");lastPlayedUrl="";prefs.edit().remove("last_url").apply();buildUi();if(b!=null){if(search!=null)search.setText(b.getString("session_search",""));
-            if(!restorePlaybackUrl.isEmpty()){if(restorePlaybackPosition>0L)prefs.edit().putLong("position_"+key(restorePlaybackUrl),restorePlaybackPosition).apply();MediaEntry restored=new MediaEntry(restorePlaybackName,restorePlaybackUrl,"Reprise","", "live");startPlayer(restored);if(!restorePlaybackWasPlaying&&player!=null)player.pause();if(restorePlayerFullscreen&&playerView!=null)togglePlayerExpanded();}}
+            if(!restorePlaybackUrl.isEmpty()){if(restorePlaybackPosition>0L)prefs.edit().putLong("position_"+key(restorePlaybackUrl),restorePlaybackPosition).apply();MediaEntry restored=new MediaEntry(restorePlaybackName,restorePlaybackUrl,"Reprise","", "live");pendingPlayerStateRestore=true;startPlayer(restored);}}
         if(b==null)showBrandSplash();loadAllPlaylists();if(!epgUrl.isEmpty())loadEpg(epgUrl);}
     // Adapte le nombre de cartes rendues à la classe mémoire réelle de l'appareil.
     // Le catalogue reste complet en mémoire (plafonné), seule la vue est limitée.
@@ -875,7 +876,15 @@ private void loadAllPlaylists(){
             activePlayer.setAudioAttributes(new androidx.media3.common.AudioAttributes.Builder().setUsage(androidx.media3.common.C.USAGE_MEDIA).setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
             activePlayer.setMediaItems(mediaItems,startIndex,resumePosition);activePlayer.prepare();activePlayer.play();
             status.setText("Lecture : "+c.name);
+            applyRestoredPlayerState();
         }catch(Exception e){releasePlayer();Toast.makeText(this,"Impossible de lancer ce flux",Toast.LENGTH_LONG).show();}
+    }
+
+    private void applyRestoredPlayerState(){
+        if(!pendingPlayerStateRestore||player==null||playerView==null)return;
+        if(!restorePlaybackWasPlaying)player.pause();
+        if(restorePlayerFullscreen&&!playerFullscreen)togglePlayerExpanded();
+        pendingPlayerStateRestore=false;
     }
 
     private void togglePlayerExpanded(){
