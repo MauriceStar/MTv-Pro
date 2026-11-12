@@ -876,7 +876,7 @@ private void showPinEditor(){
         if(player!=null&&currentEntry!=null){long position=player.getCurrentPosition();outState.putString("session_player_url",currentEntry.url);outState.putString("session_player_name",currentEntry.name==null?"Reprise":currentEntry.name);outState.putLong("session_player_position",position);outState.putBoolean("session_player_playing",player.getPlayWhenReady()||resumePlaybackOnStart);outState.putBoolean("session_player_fullscreen",playerFullscreen);if(position>0L)prefs.edit().putLong("position_"+key(currentEntry.url),position).apply();}
     }
     @Override protected void onStart(){super.onStart();if(resumePlaybackOnStart&&player!=null){resumePlaybackOnStart=false;player.play();}if(player!=null&&player.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(player,currentEntry);}
-    @Override protected void onStop(){stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.isPlaying();savePlaybackPosition();player.pause();}}
+    @Override protected void onStop(){stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.getPlayWhenReady();savePlaybackPosition();player.pause();}}
     @Override protected void onDestroy(){
         destroyed=true;if(pendingSearch!=null)mainHandler.removeCallbacks(pendingSearch);
         savePlaybackPosition();releasePlayer();io.shutdownNow();super.onDestroy();
