@@ -990,6 +990,7 @@ private void loadAllPlaylists(){
                     handlePlayerFailure(activePlayer,c,e);
                 }
                 @Override public void onPlaybackStateChanged(int playbackState){
+                    if(player!=activePlayer)return;
                     if(playbackState==Player.STATE_BUFFERING)startBufferingWatchdog(activePlayer,c);
                     else stopBufferingWatchdog(activePlayer);
                     if(playbackState==Player.STATE_ENDED){stopPlaybackPositionSaver();clearPlaybackPosition(currentEntry);}
@@ -1000,6 +1001,7 @@ private void loadAllPlaylists(){
                     }
                 }
                 @Override public void onMediaItemTransition(MediaItem item,int reason){
+                    if(player!=activePlayer)return;
                     if(reason==Player.MEDIA_ITEM_TRANSITION_REASON_AUTO)clearPlaybackPosition(currentEntry);
                     String uri=item.localConfiguration==null?"":item.localConfiguration.uri.toString();
                     for(MediaEntry entry:queue)if(entry.url.equals(uri)){
