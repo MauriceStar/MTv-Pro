@@ -774,7 +774,6 @@ private void loadAllPlaylists(){
             TextView empty=text(all.isEmpty()?"Aucun contenu chargé. Configure une source M3U ou Xtream dans Paramètres.":"Aucun résultat dans cette rubrique.",14,MUTED,false);
             empty.setPadding(dp(12),dp(30),dp(12),dp(20));list.addView(empty);
         }
-    }
         restorePendingCatalogScroll();
     }
     private void restorePendingCatalogScroll(){
