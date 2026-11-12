@@ -606,7 +606,7 @@ private void loadAllPlaylists(){
         if(section.equals("ACCUEIL")&&q.trim().isEmpty()){renderHome();return;}
         int shown=0,matched=0;
         boolean hasMore=false;
-        List<MediaEntry> activeItems=section.equals("MTV")?mtvItems:all;
+        List<MediaEntry> activeItems=all;
         for(MediaEntry c:activeItems){
             if(!matchSection(c))continue;
             if(PROFILE_CHILD.equals(activeProfile)&&isAdultEntry(c))continue;
@@ -650,7 +650,7 @@ private void loadAllPlaylists(){
             }
         }
         if(shown==0){
-            TextView empty=text(section.equals("MTV")?(mtvPlaylistUrl.isEmpty()?"Configure une playlist M3U autorisée pour MTV dans Paramètres.":"Aucune chaîne MTV disponible dans cette source."):(all.isEmpty()?"Aucun contenu chargé. Configure une source M3U ou Xtream dans Paramètres.":"Aucun résultat dans cette rubrique."),14,MUTED,false);
+            TextView empty=text(all.isEmpty()?"Aucun contenu chargé. Configure une source M3U ou Xtream dans Paramètres.":"Aucun résultat dans cette rubrique.",14,MUTED,false);
             empty.setPadding(dp(12),dp(30),dp(12),dp(20));list.addView(empty);
         }
     }
