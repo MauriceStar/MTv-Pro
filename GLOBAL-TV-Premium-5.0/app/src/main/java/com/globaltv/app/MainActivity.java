@@ -36,12 +36,14 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 import androidx.media3.ui.AspectRatioFrameLayout;
 
 /** GLOBAL TV Premium - Android TV / Google TV. */
+@UnstableApi
 public class MainActivity extends AppCompatActivity {
     private static final String DEFAULT_PLAYLIST="https://iptv-org.github.io/iptv/index.m3u";
     private static final String[] BUILT_IN_PLAYLISTS={
