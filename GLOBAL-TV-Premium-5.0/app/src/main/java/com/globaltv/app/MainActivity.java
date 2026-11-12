@@ -512,7 +512,7 @@ private void loadAllPlaylists(){
    try{appendM3uPlaylist(address,merged);}catch(Exception ex){String host=Uri.parse(address).getHost();errors.add((host==null?address:host)+": "+ex.getMessage());}
   }
   if(request!=catalogRequestId||destroyed)return;final int loaded=merged.size();
-  postUi(()->{if(request!=catalogRequestId)return;all.clear();all.addAll(merged);sourceMode="M3U";sourceLabel.setText("SOURCES : "+urls.size()+" M3U");
+  postUi(()->{if(request!=catalogRequestId)return;renderOffset=0;all.clear();all.addAll(merged);sourceMode="M3U";sourceLabel.setText("SOURCES : "+urls.size()+" M3U");
    if(loaded==0){String problem=errors.isEmpty()?"Aucune chaîne reçue. Vérifie tes sources.":"Erreur M3U : "+errors.get(0);status.setText(problem);renderList();onStartupPlaylistLoadFinished(false,"AUCUNE PLAYLIST DISPONIBLE • VÉRIFIE TES SOURCES");return;}
    status.setText(loaded+" chaînes/contenus chargés • "+urls.size()+" source(s) M3U"+(errors.isEmpty()?"":" • "+errors.size()+" erreur(s)"));renderList();onStartupPlaylistLoadFinished(true,loaded+" CHAÎNES CHARGÉES • PRÊT À REGARDER");
   });
@@ -536,7 +536,7 @@ private void loadAllPlaylists(){
   }catch(Exception e){err=e.getMessage();}
   final String error=err;final ArrayList<String> failures=endpointErrors;if(request!=catalogRequestId||destroyed)return;
   postUi(()->{if(request!=catalogRequestId)return;if(error!=null){status.setText("Connexion Xtream impossible : "+error);return;}
-   all.clear();all.addAll(parsed);sourceMode="XTREAM";sourceLabel.setText("SOURCE : XTREAM");
+   renderOffset=0;all.clear();all.addAll(parsed);sourceMode="XTREAM";sourceLabel.setText("SOURCE : XTREAM");
    status.setText(parsed.size()+" éléments récupérés • Serveur Xtream"+(failures.isEmpty()?"":" • "+failures.size()+" catégorie(s) indisponible(s)"));renderList();
   });
  });
