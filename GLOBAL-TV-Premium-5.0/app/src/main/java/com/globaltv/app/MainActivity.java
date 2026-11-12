@@ -5,6 +5,10 @@ import android.os.*;
 import android.content.*;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.animation.ValueAnimator;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -91,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         playlistSources.add(DEFAULT_PLAYLIST);
         playlistSources.addAll(Arrays.asList(BUILT_IN_PLAYLISTS));
         prefs.edit().putStringSet("m3u_sources",new LinkedHashSet<>(playlistSources)).apply();
-        epgUrl=prefs.getString("epg_url","");lastPlayedUrl=prefs.getString("last_url","");buildUi();loadAllPlaylists();if(!epgUrl.isEmpty())loadEpg(epgUrl);}
+        epgUrl=prefs.getString("epg_url","");lastPlayedUrl=prefs.getString("last_url","");buildUi();showBrandSplash();loadAllPlaylists();if(!epgUrl.isEmpty())loadEpg(epgUrl);}
     // Adapte le nombre de cartes rendues à la classe mémoire réelle de l'appareil.
     // Le catalogue reste complet en mémoire (plafonné), seule la vue est limitée.
     private void configureMemoryBudget(){
@@ -108,6 +112,72 @@ public class MainActivity extends AppCompatActivity {
     private TextView text(String s,int size,int color,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);if(bold)t.setTypeface(Typeface.DEFAULT,Typeface.BOLD);t.setGravity(Gravity.CENTER_VERTICAL);return t;}
     private LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
     private LinearLayout row(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.HORIZONTAL);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
+
+    // Splash MTv Pro : révélation du M doré, liaison satellite temporaire.
+    private void showBrandSplash(){
+        ViewGroup decor=(ViewGroup)getWindow().getDecorView();
+        BrandSplash splash=new BrandSplash(this);
+        decor.addView(splash,new ViewGroup.LayoutParams(-1,-1));
+        splash.start();
+    }
+    private final class BrandSplash extends View {
+        private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private float progress=0f;
+        private ValueAnimator animator;
+        BrandSplash(Context context){super(context);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
+        void start(){
+            animator=ValueAnimator.ofFloat(0f,1f);
+            animator.setDuration(2350L);
+            animator.addUpdateListener(a->{progress=(Float)a.getAnimatedValue();invalidate();});
+            animator.addListener(new android.animation.AnimatorListenerAdapter(){
+                @Override public void onAnimationEnd(android.animation.Animator a){
+                    if(getParent() instanceof ViewGroup)((ViewGroup)getParent()).removeView(BrandSplash.this);
+                }
+            });
+            animator.start();
+        }
+        private void paint(int color,float width,Paint.Style style){
+            p.setColor(color);p.setStrokeWidth(width);p.setStyle(style);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeJoin(Paint.Join.ROUND);p.setShader(null);p.setShadowLayer(0,0,0,Color.TRANSPARENT);
+        }
+        @Override protected void onDraw(Canvas canvas){
+            super.onDraw(canvas);
+            float w=getWidth(),h=getHeight(),s=Math.min(w/420f,h/760f);
+            canvas.save();canvas.translate((w-420f*s)/2f,(h-760f*s)/2f);canvas.scale(s,s);
+            p.setShader(new android.graphics.RadialGradient(210,340,520,new int[]{0xFF142A50,0xFF080D19,0xFF050914},null,android.graphics.Shader.TileMode.CLAMP));
+            canvas.drawRect(0,0,420,760,p);p.setShader(null);
+            float reveal=Math.min(1f,Math.max(0f,(progress-.12f)/.48f));
+            float left=70,top=245,right=350,bottom=445;
+            paint(0xFF27C8F2,5,Paint.Style.STROKE);p.setShadowLayer(18,0,0,0xFF159DFF);
+            canvas.drawRoundRect(left,top,right,bottom,18,18,p);p.clearShadowLayer();
+            paint(0xFF14284B,Paint.Style.FILL==p.getStyle()?1:0,Paint.Style.FILL);
+            canvas.drawRoundRect(left+8,top+8,right-8,bottom-8,12,12,p);
+            // Pied et base du moniteur.
+            paint(0xFF8FB8D8,5,Paint.Style.STROKE);canvas.drawLine(210,bottom,210,bottom+34,p);canvas.drawRoundRect(165,bottom+33,255,bottom+42,5,5,p);
+            // M : se dessine en cyan puis devient doré.
+            Path m=new Path();m.moveTo(145,390);m.lineTo(145,300);m.lineTo(210,360);m.lineTo(275,300);m.lineTo(275,390);
+            int mColor=progress>.48f?0xFFFFC928:0xFF27C8F2;
+            paint(mColor,11,Paint.Style.STROKE);p.setStrokeJoin(Paint.Join.ROUND);p.setShadowLayer(20,0,0,mColor);
+            canvas.save();canvas.clipRect(125,280,295,395);canvas.drawPath(m,p);canvas.restore();p.clearShadowLayer();
+            // Satellite et faisceau : visibles seulement au milieu de la séquence.
+            float sat= Math.max(0f,Math.min(1f,(progress-.48f)/.25f));
+            if(sat>0f){
+                p.setAlpha((int)(255*sat));
+                paint(0xFFB8D7F2,3,Paint.Style.STROKE);
+                canvas.drawLine(330,195,295,225,p);canvas.drawLine(330,195,365,225,p);
+                paint(0xFFFFC928,1,Paint.Style.FILL);canvas.drawRect(317,187,343,203,p);
+                paint(0xFF27C8F2,2,Paint.Style.STROKE);
+                canvas.drawArc(265,195,325,255,205,100,false,p);canvas.drawArc(250,185,330,265,205,100,false,p);
+                p.setAlpha(255);
+                paint(0xFFFFC928,3,Paint.Style.STROKE);p.setShadowLayer(12,0,0,0xFFFFC928);
+                Path orbit=new Path();orbit.moveTo(70,455);orbit.cubicTo(145,490,300,470,350,405);canvas.drawPath(orbit,p);p.clearShadowLayer();
+            }
+            // Éclat final discret.
+            if(progress>.82f){paint(0xFFFFD85A,2,Paint.Style.STROKE);canvas.drawCircle(210,345,110+(progress-.82f)*65,p);}
+            canvas.restore();
+        }
+        @Override protected void onDetachedFromWindow(){if(animator!=null&&animator.isRunning())animator.cancel();super.onDetachedFromWindow();}
+    }
+
     private void buildUi(){
         root=row();root.setBackgroundColor(BG);setContentView(root);
         sidebarScroll=new ScrollView(this);sidebarScroll.setFillViewport(true);sidebarScroll.setVerticalScrollBarEnabled(true);sidebarScroll.setScrollbarFadingEnabled(false);sidebarScroll.setSmoothScrollingEnabled(true);sidebarScroll.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);root.addView(sidebarScroll,new LinearLayout.LayoutParams(dp(220),-1));
