@@ -94,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
     private final Set<String> failedInCurrentRun=new HashSet<>();
     private Runnable bufferingWatchdog;
     private ExoPlayer bufferingWatchdogPlayer;
+    private android.net.ConnectivityManager connectivityManager;
+    private android.net.ConnectivityManager.NetworkCallback networkCallback;
+    private boolean networkCallbackRegistered=false,networkUnavailable=false;
+    private Runnable networkRecoveryRunnable;
     private EditText search;
     private TextView status,heading,sourceLabel;
     private PlayerView playerView;
@@ -563,6 +567,58 @@ private void loadAllPlaylists(){
         };
         mainHandler.postDelayed(bufferingWatchdog,45000L);
     }
+    private boolean hasInternetConnection(){
+        try{
+            if(connectivityManager==null)connectivityManager=(android.net.ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(connectivityManager==null)return false;
+            android.net.Network active=connectivityManager.getActiveNetwork();
+            if(active==null)return false;
+            android.net.NetworkCapabilities caps=connectivityManager.getNetworkCapabilities(active);
+            return caps!=null&&caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        }catch(Exception ignored){return false;}
+    }
+    private void registerNetworkMonitor(){
+        if(networkCallbackRegistered)return;
+        try{
+            if(connectivityManager==null)connectivityManager=(android.net.ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if(connectivityManager==null)return;
+            networkUnavailable=!hasInternetConnection();
+            android.net.NetworkRequest request=new android.net.NetworkRequest.Builder()
+                .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET).build();
+            if(networkCallback==null)networkCallback=new android.net.ConnectivityManager.NetworkCallback(){
+                @Override public void onAvailable(android.net.Network network){mainHandler.post(()->handleNetworkAvailable());}
+                @Override public void onLost(android.net.Network network){mainHandler.post(()->{if(!hasInternetConnection())networkUnavailable=true;});}
+            };
+            connectivityManager.registerNetworkCallback(request,networkCallback);
+            networkCallbackRegistered=true;
+        }catch(Exception ignored){networkCallbackRegistered=false;}
+    }
+    private void handleNetworkAvailable(){
+        if(!hasInternetConnection()){networkUnavailable=true;return;}
+        if(!networkUnavailable)return;
+        networkUnavailable=false;
+        if(networkRecoveryRunnable!=null)mainHandler.removeCallbacks(networkRecoveryRunnable);
+        networkRecoveryRunnable=()->{
+            networkRecoveryRunnable=null;
+            ExoPlayer active=player;
+            if(active==null||destroyed||!active.getPlayWhenReady())return;
+            int state=active.getPlaybackState();
+            if(state==Player.STATE_BUFFERING||state==Player.STATE_IDLE){
+                active.prepare();
+                active.play();
+                if(active.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(active,currentEntry);
+            }
+        };
+        mainHandler.postDelayed(networkRecoveryRunnable,1500L);
+    }
+    private void unregisterNetworkMonitor(){
+        if(networkRecoveryRunnable!=null)mainHandler.removeCallbacks(networkRecoveryRunnable);
+        networkRecoveryRunnable=null;
+        if(networkCallbackRegistered&&connectivityManager!=null&&networkCallback!=null){
+            try{connectivityManager.unregisterNetworkCallback(networkCallback);}catch(Exception ignored){}
+        }
+        networkCallbackRegistered=false;
+    }
     private void stopBufferingWatchdog(ExoPlayer expected){
         if(expected!=null&&bufferingWatchdogPlayer!=expected)return;
         if(bufferingWatchdog!=null)mainHandler.removeCallbacks(bufferingWatchdog);
@@ -875,8 +931,8 @@ private void showPinEditor(){
         if(catalogScroll!=null)outState.putInt("session_catalog_scroll",catalogScroll.getScrollY());
         if(player!=null&&currentEntry!=null){long position=player.getCurrentPosition();outState.putString("session_player_url",currentEntry.url);outState.putString("session_player_name",currentEntry.name==null?"Reprise":currentEntry.name);outState.putLong("session_player_position",position);outState.putBoolean("session_player_playing",player.getPlayWhenReady()||resumePlaybackOnStart);outState.putBoolean("session_player_fullscreen",playerFullscreen);if(position>0L)prefs.edit().putLong("position_"+key(currentEntry.url),position).apply();}
     }
-    @Override protected void onStart(){super.onStart();if(resumePlaybackOnStart&&player!=null){resumePlaybackOnStart=false;player.play();}if(player!=null&&player.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(player,currentEntry);}
-    @Override protected void onStop(){stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.getPlayWhenReady();savePlaybackPosition();player.pause();}}
+    @Override protected void onStart(){super.onStart();registerNetworkMonitor();if(resumePlaybackOnStart&&player!=null){resumePlaybackOnStart=false;player.play();}if(player!=null&&player.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(player,currentEntry);}
+    @Override protected void onStop(){unregisterNetworkMonitor();stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.getPlayWhenReady();savePlaybackPosition();player.pause();}}
     @Override protected void onDestroy(){
         destroyed=true;if(pendingSearch!=null)mainHandler.removeCallbacks(pendingSearch);
         savePlaybackPosition();releasePlayer();io.shutdownNow();super.onDestroy();
