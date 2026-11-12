@@ -131,57 +131,75 @@ public class MainActivity extends AppCompatActivity {
     }
     private void onStartupPlaylistLoadFinished(boolean success,String message){if(brandSplash==null)return;splashLoadFinished=true;brandSplash.setMessage(message);long elapsed=android.os.SystemClock.uptimeMillis()-splashStartedAt;long remaining=Math.max(0L,15000L-elapsed);mainHandler.postDelayed(()->{if(splashLoadFinished)finishBrandSplash();},remaining);}
     private void finishBrandSplash(){if(brandSplash==null)return;if(splashTimeoutRunnable!=null)mainHandler.removeCallbacks(splashTimeoutRunnable);BrandSplash splash=brandSplash;brandSplash=null;splash.animate().alpha(0f).setDuration(500L).withEndAction(()->{if(splash.getParent() instanceof ViewGroup)((ViewGroup)splash.getParent()).removeView(splash);}).start();}
-    private final class BrandSplash extends View {
-        private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
-        private float progress=0f;
-        private ValueAnimator animator;
-        private String message="PRÉPARATION DES CHAÎNES TV";
-        void setMessage(String value){message=value==null?"CHARGEMENT DES PLAYLISTS":value;invalidate();}
-        BrandSplash(Context context){super(context);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
-        void start(){
-            animator=ValueAnimator.ofFloat(0f,1f);animator.setDuration(15000L);animator.setRepeatCount(ValueAnimator.INFINITE);animator.setRepeatMode(ValueAnimator.RESTART);animator.addUpdateListener(a->{progress=(Float)a.getAnimatedValue();invalidate();});animator.start();
+    private final class BrandSplash extends FrameLayout {
+        private final ImageView artwork;
+        private final TextView messageView;
+        private final ProgressBar progressBar;
+
+        void setMessage(String value) {
+            messageView.setText(value == null ? "CHARGEMENT DU CATALOGUE…" : value);
         }
-        private void paint(int color,float width,Paint.Style style){
-            p.setColor(color);p.setStrokeWidth(width);p.setStyle(style);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeJoin(Paint.Join.ROUND);p.setShader(null);p.setShadowLayer(0,0,0,Color.TRANSPARENT);
-        }
-        @Override protected void onDraw(Canvas canvas){
-            super.onDraw(canvas);
-            float w=getWidth(),h=getHeight(),s=Math.max(w/420f,h/760f);
-            canvas.save();canvas.translate((w-420f*s)/2f,(h-760f*s)/2f);canvas.scale(s,s);
-            p.setShader(new android.graphics.RadialGradient(210,340,520,new int[]{0xFF142A50,0xFF080D19,0xFF050914},null,android.graphics.Shader.TileMode.CLAMP));
-            canvas.drawRect(0,0,420,760,p);p.setShader(null);
-            float reveal=Math.min(1f,Math.max(0f,(progress-.12f)/.48f));
-            float left=70,top=245,right=350,bottom=445;
-            paint(0xFF27C8F2,5,Paint.Style.STROKE);p.setShadowLayer(18,0,0,0xFF159DFF);
-            canvas.drawRoundRect(left,top,right,bottom,18,18,p);p.clearShadowLayer();
-            paint(0xFF14284B,Paint.Style.FILL==p.getStyle()?1:0,Paint.Style.FILL);
-            canvas.drawRoundRect(left+8,top+8,right-8,bottom-8,12,12,p);
-            // Pied et base du moniteur.
-            paint(0xFF8FB8D8,5,Paint.Style.STROKE);canvas.drawLine(210,bottom,210,bottom+34,p);canvas.drawRoundRect(165,bottom+33,255,bottom+42,5,5,p);
-            // M : se dessine en cyan puis devient doré.
-            Path m=new Path();m.moveTo(145,390);m.lineTo(145,300);m.lineTo(210,360);m.lineTo(275,300);m.lineTo(275,390);
-            int mColor=progress>.48f?0xFFFFC928:0xFF27C8F2;
-            paint(mColor,11,Paint.Style.STROKE);p.setStrokeJoin(Paint.Join.ROUND);p.setShadowLayer(20,0,0,mColor);
-            canvas.save();canvas.clipRect(125,280,295,395);canvas.drawPath(m,p);canvas.restore();p.clearShadowLayer();
-            // Satellite et faisceau : visibles seulement au milieu de la séquence.
-            float sat= Math.max(0f,Math.min(1f,(progress-.48f)/.25f));
-            if(sat>0f){
-                p.setAlpha((int)(255*sat));
-                paint(0xFFB8D7F2,3,Paint.Style.STROKE);
-                canvas.drawLine(330,195,295,225,p);canvas.drawLine(330,195,365,225,p);
-                paint(0xFFFFC928,1,Paint.Style.FILL);canvas.drawRect(317,187,343,203,p);
-                paint(0xFF27C8F2,2,Paint.Style.STROKE);
-                canvas.drawArc(265,195,325,255,205,100,false,p);canvas.drawArc(250,185,330,265,205,100,false,p);
-                p.setAlpha(255);
-                paint(0xFFFFC928,3,Paint.Style.STROKE);p.setShadowLayer(12,0,0,0xFFFFC928);
-                Path orbit=new Path();orbit.moveTo(70,455);orbit.cubicTo(145,490,300,470,350,405);canvas.drawPath(orbit,p);p.clearShadowLayer();
+
+        BrandSplash(Context context) {
+            super(context);
+            setBackgroundColor(Color.BLACK);
+            setFocusable(true);
+            setClickable(true);
+
+            artwork = new ImageView(context);
+            artwork.setImageResource(R.drawable.splash_mtv_pro);
+            artwork.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            artwork.setAdjustViewBounds(false);
+            artwork.setBackgroundColor(Color.BLACK);
+            addView(artwork, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER
+            ));
+
+            LinearLayout loading = new LinearLayout(context);
+            loading.setOrientation(LinearLayout.VERTICAL);
+            loading.setGravity(Gravity.CENTER_HORIZONTAL);
+            loading.setPadding(dp(18), dp(10), dp(18), dp(8));
+            GradientDrawable panel = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0x00101830, 0xB8000716, 0xE6000614}
+            );
+            panel.setCornerRadius(dp(12));
+            loading.setBackground(panel);
+
+            messageView = new TextView(context);
+            messageView.setText("PRÉPARATION DES CHAÎNES TV…");
+            messageView.setTextColor(Color.WHITE);
+            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            messageView.setTypeface(Typeface.create("sans-serif-medium", Typeface.BOLD));
+            messageView.setGravity(Gravity.CENTER);
+            messageView.setShadowLayer(dp(4), 0, dp(1), Color.BLACK);
+            loading.addView(messageView, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+
+            progressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
+            progressBar.setIndeterminate(true);
+            if (android.os.Build.VERSION.SDK_INT >= 21) {
+                progressBar.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(0xFFFFC52B));
+                progressBar.setProgressTintList(android.content.res.ColorStateList.valueOf(0xFFFFC52B));
             }
-            // Éclat final discret.
-            if(progress>.82f){paint(0xFFFFD85A,2,Paint.Style.STROKE);canvas.drawCircle(210,345,110+(progress-.82f)*65,p);}
-            canvas.restore();
-            p.setShader(null);p.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));p.setTextAlign(Paint.Align.CENTER);p.setTextSize(Math.max(13f,dp(13)));p.setColor(0xFFE7F2FF);p.setAlpha(225);canvas.drawText(message,w/2f,h*.84f,p);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(Math.max(2f,dp(2)));p.setColor(0xFFFFC928);canvas.drawArc(w/2f-dp(15),h*.89f-dp(15),w/2f+dp(15),h*.89f+dp(15),progress*360f,245f,false,p);p.setStyle(Paint.Style.FILL);p.setAlpha(255);
+            LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(7)
+            );
+            barParams.topMargin = dp(10);
+            loading.addView(progressBar, barParams);
+
+            FrameLayout.LayoutParams loadingParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
+            );
+            loadingParams.leftMargin = dp(18);
+            loadingParams.rightMargin = dp(18);
+            loadingParams.bottomMargin = dp(20);
+            addView(loading, loadingParams);
         }
-        @Override protected void onDetachedFromWindow(){if(animator!=null&&animator.isRunning())animator.cancel();super.onDetachedFromWindow();}
     }
 
     private void buildUi(){
