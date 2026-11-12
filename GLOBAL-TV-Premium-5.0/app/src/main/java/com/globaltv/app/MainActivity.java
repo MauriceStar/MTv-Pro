@@ -1033,7 +1033,14 @@ private void showPinEditor(){
     @Override protected void onStart(){super.onStart();registerNetworkMonitor();if(resumePlaybackOnStart&&player!=null){resumePlaybackOnStart=false;player.play();}if(player!=null&&player.getPlaybackState()==Player.STATE_BUFFERING)startBufferingWatchdog(player,currentEntry);}
     @Override protected void onStop(){unregisterNetworkMonitor();stopBufferingWatchdog(null);super.onStop();if(player!=null){resumePlaybackOnStart=player.getPlayWhenReady();savePlaybackPosition();player.pause();}}
     @Override protected void onDestroy(){
-        destroyed=true;if(pendingSearch!=null)mainHandler.removeCallbacks(pendingSearch);
-        savePlaybackPosition();releasePlayer();io.shutdownNow();super.onDestroy();
+        destroyed=true;
+        catalogRequestId++;
+        unregisterNetworkMonitor();
+        if(pendingSearch!=null){mainHandler.removeCallbacks(pendingSearch);pendingSearch=null;}
+        if(networkRecoveryRunnable!=null){mainHandler.removeCallbacks(networkRecoveryRunnable);networkRecoveryRunnable=null;}
+        stopBufferingWatchdog(null);
+        if(splashTimeoutRunnable!=null){mainHandler.removeCallbacks(splashTimeoutRunnable);splashTimeoutRunnable=null;}
+        if(brandSplash!=null){BrandSplash splash=brandSplash;brandSplash=null;splash.setProgressComplete();if(splash.getParent() instanceof ViewGroup)((ViewGroup)splash.getParent()).removeView(splash);}
+        savePlaybackPosition();releasePlayer();io.shutdownNow();mainHandler.removeCallbacksAndMessages(null);super.onDestroy();
     }
 }
