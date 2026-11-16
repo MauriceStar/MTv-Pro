@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         sidebarScroll=new ScrollView(this);sidebarScroll.setFillViewport(true);sidebarScroll.setVerticalScrollBarEnabled(true);sidebarScroll.setScrollbarFadingEnabled(false);sidebarScroll.setSmoothScrollingEnabled(true);sidebarScroll.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);root.addView(sidebarScroll,new LinearLayout.LayoutParams(dp(220),-1));
         sidebar=column();sidebar.setPadding(dp(18),dp(22),dp(12),dp(14));sidebar.setBackgroundColor(0xFF0D1525);sidebarScroll.addView(sidebar,new ScrollView.LayoutParams(-1,-2));
         LinearLayout brand=row();brand.setGravity(Gravity.CENTER);ImageView brandIcon=new ImageView(this);brandIcon.setImageResource(R.drawable.ic_launcher_tv);brandIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);brand.addView(brandIcon,new LinearLayout.LayoutParams(dp(82),dp(82)));LinearLayout.LayoutParams brandParams=new LinearLayout.LayoutParams(-1,dp(94));brandParams.bottomMargin=dp(7);sidebar.addView(brand,brandParams);
-        addNav("⌂   Accueil","ACCUEIL");addNav("▣   TV en direct","TV EN DIRECT");addNav("♫   Musique","MUSIQUE");addNav("▤   Infos","INFOS");addNav("▶   Films","FILMS");addNav("▤   Séries","SÉRIES");addNav("✦   Animés","ANIMÉS");addNav("♡   Mes favoris","FAVORIS");addNav("◷   Historique","HISTORIQUE");addNav("▦   Guide TV","GUIDE TV");
+        addNav("⌂   Accueil","ACCUEIL");addNav("▣   TV en direct","TV EN DIRECT");addNav("⚽   Sports","SPORTS");addNav("🎬   Cinéma","CINÉMA");addNav("🎭   Divertissement","DIVERTISSEMENT");addNav("🧒   Jeunesse","JEUNESSE");addNav("📰   Magazine","MAGAZINE");addNav("🎥   Documentaire","DOCUMENTAIRE");addNav("🎓   Éducation","ÉDUCATION");addNav("✝   Religion","RELIGION");addNav("🔬   Science & Technologie","SCIENCE & TECHNOLOGIE");addNav("💃   Novelas","NOVELAS");addNav("♫   Musique","MUSIQUE");addNav("▤   Infos","INFOS");addNav("▶   Films","FILMS");addNav("▤   Séries","SÉRIES");addNav("✦   Animés","ANIMÉS");addNav("♡   Mes favoris","FAVORIS");addNav("◷   Historique","HISTORIQUE");addNav("▦   Guide TV","GUIDE TV");
         View spacer=new View(this);sidebar.addView(spacer,new LinearLayout.LayoutParams(1,dp(12)));
         sourceLabel=text("SOURCE : M3U",10,CYAN,true);sidebar.addView(sourceLabel,new LinearLayout.LayoutParams(-1,dp(28)));
         addNav("⚙   Sources & paramètres","PARAMÈTRES");
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
  renderList();
  if(target.equals("PARAMÈTRES"))showSettings();else{TextView selectedNav=navViews.get(target);if(selectedNav!=null)selectedNav.requestFocus();}
 }
-    private void updateChips(){if(chips==null)return;chips.removeAllViews();String[] opts;if(section.equals("TV EN DIRECT"))opts=new String[]{"Tout","France","Afrique","USA","Canada","Germany","Espagne","Angleterre","Sports","News","Music","Kids","Réligion","Documentaire"};else if(section.equals("FAVORIS")){ArrayList<String> values=new ArrayList<>();values.add("Tout");values.addAll(favoriteGroups.keySet());values.add("＋ Créer une liste");opts=values.toArray(new String[0]);}else if(section.equals("HISTORIQUE")||section.equals("GUIDE TV")||section.equals("MUSIQUE")||section.equals("INFOS"))opts=new String[]{"Tout"};else opts=new String[]{"Tout","Action","Comédie","Drame","Aventure","Fantasy","Science-fiction","Animation"};int previousId=View.NO_ID;for(String value:opts){final String filter=value;TextView c=text(value,12,activeFilter.equals(value)?Color.WHITE:0xFFB8C4D8,true);c.setGravity(Gravity.CENTER);c.setPadding(dp(15),0,dp(15),0);c.setBackground(bg(activeFilter.equals(value)?ACCENT:CARD,18));c.setFocusable(true);c.setFocusableInTouchMode(true);c.setClickable(true);c.setId(View.generateViewId());c.setNextFocusUpId(search.getId());if(previousId!=View.NO_ID)c.setNextFocusLeftId(previousId);if(previousId!=View.NO_ID)chips.getChildAt(chips.getChildCount()-1).setNextFocusRightId(c.getId());previousId=c.getId();c.setOnFocusChangeListener((v,focus)->{if(focus){if(filter.equals(activeFilter)){GradientDrawable d=bg(ACCENT,18);d.setStroke(dp(2),FOCUS_GOLD);v.setBackground(d);((TextView)v).setTextColor(Color.WHITE);}else{GradientDrawable d=bg(FOCUS_GOLD,18);d.setStroke(dp(2),FOCUS_RED);v.setBackground(d);((TextView)v).setTextColor(0xFF17111A);}Rect rect=new Rect();v.getDrawingRect(rect);chipScroll.requestChildRectangleOnScreen(v,rect,true);}else{v.setBackground(bg(filter.equals(activeFilter)?ACCENT:CARD,18));((TextView)v).setTextColor(filter.equals(activeFilter)?Color.WHITE:0xFFB8C4D8);}});c.setOnKeyListener((v,keyCode,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;if(keyCode==KeyEvent.KEYCODE_DPAD_CENTER||keyCode==KeyEvent.KEYCODE_ENTER){v.performClick();return true;}if(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT||keyCode==KeyEvent.KEYCODE_DPAD_LEFT){int idx=chips.indexOfChild(v),next=idx+(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1);if(next>=0&&next<chips.getChildCount()){chips.getChildAt(next).requestFocus();return true;}}if(keyCode==KeyEvent.KEYCODE_DPAD_DOWN){if(list.getChildCount()>0){list.getChildAt(0).requestFocus();return true;}}return false;});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(38));p.rightMargin=dp(8);chips.addView(c,p);c.setOnClickListener(v->{if(section.equals("FAVORIS")&&filter.equals("＋ Créer une liste")){showCreateFavoriteGroup();return;}activeFilter=filter;updateChips();renderList();for(int i=0;i<chips.getChildCount();i++){View selected=chips.getChildAt(i);if(selected instanceof TextView&&filter.equals(((TextView)selected).getText().toString())){selected.requestFocus();break;}}});}search.setNextFocusDownId(chips.getChildAt(0).getId());}
+    private void updateChips(){if(chips==null)return;chips.removeAllViews();String[] opts;if(section.equals("FAVORIS")){ArrayList<String> values=new ArrayList<>();values.add("Tout");values.addAll(favoriteGroups.keySet());values.add("＋ Créer une liste");opts=values.toArray(new String[0]);}else opts=new String[]{"Tout","Afrique","Europe","Asie","Amérique du Nord","Amérique du Sud","Océanie","France","Togo","Bénin","Côte d’Ivoire","Ghana","Nigeria","Sénégal","Cameroun","Congo","RDC","Afrique du Sud","Maroc","Algérie","Tunisie","Égypte","Royaume-Uni","Allemagne","Espagne","Italie","Portugal","Belgique","Pays-Bas","Suisse","USA","Canada","Mexique","Brésil","Argentine","Chili","Inde","Chine","Japon","Corée du Sud","Turquie","Arabie saoudite","Émirats arabes unis","Australie","Nouvelle-Zélande"};int previousId=View.NO_ID;for(String value:opts){final String filter=value;TextView c=text(value,12,activeFilter.equals(value)?Color.WHITE:0xFFB8C4D8,true);c.setGravity(Gravity.CENTER);c.setPadding(dp(15),0,dp(15),0);c.setBackground(bg(activeFilter.equals(value)?ACCENT:CARD,18));c.setFocusable(true);c.setFocusableInTouchMode(true);c.setClickable(true);c.setId(View.generateViewId());c.setNextFocusUpId(search.getId());if(previousId!=View.NO_ID)c.setNextFocusLeftId(previousId);if(previousId!=View.NO_ID)chips.getChildAt(chips.getChildCount()-1).setNextFocusRightId(c.getId());previousId=c.getId();c.setOnFocusChangeListener((v,focus)->{if(focus){if(filter.equals(activeFilter)){GradientDrawable d=bg(ACCENT,18);d.setStroke(dp(2),FOCUS_GOLD);v.setBackground(d);((TextView)v).setTextColor(Color.WHITE);}else{GradientDrawable d=bg(FOCUS_GOLD,18);d.setStroke(dp(2),FOCUS_RED);v.setBackground(d);((TextView)v).setTextColor(0xFF17111A);}Rect rect=new Rect();v.getDrawingRect(rect);chipScroll.requestChildRectangleOnScreen(v,rect,true);}else{v.setBackground(bg(filter.equals(activeFilter)?ACCENT:CARD,18));((TextView)v).setTextColor(filter.equals(activeFilter)?Color.WHITE:0xFFB8C4D8);}});c.setOnKeyListener((v,keyCode,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;if(keyCode==KeyEvent.KEYCODE_DPAD_CENTER||keyCode==KeyEvent.KEYCODE_ENTER){v.performClick();return true;}if(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT||keyCode==KeyEvent.KEYCODE_DPAD_LEFT){int idx=chips.indexOfChild(v),next=idx+(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1);if(next>=0&&next<chips.getChildCount()){chips.getChildAt(next).requestFocus();return true;}}if(keyCode==KeyEvent.KEYCODE_DPAD_DOWN){if(list.getChildCount()>0){list.getChildAt(0).requestFocus();return true;}}return false;});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(38));p.rightMargin=dp(8);chips.addView(c,p);c.setOnClickListener(v->{if(section.equals("FAVORIS")&&filter.equals("＋ Créer une liste")){showCreateFavoriteGroup();return;}activeFilter=filter;updateChips();renderList();for(int i=0;i<chips.getChildCount();i++){View selected=chips.getChildAt(i);if(selected instanceof TextView&&filter.equals(((TextView)selected).getText().toString())){selected.requestFocus();break;}}});}search.setNextFocusDownId(chips.getChildAt(0).getId());}
 
 
     private void executeIo(Runnable task){
@@ -387,19 +387,80 @@ private void loadAllPlaylists(){
         if(c==null||c.url==null)return false;
         if(section.equals("MUSIQUE"))return isMusicEntry(c);
         if(section.equals("INFOS"))return isNewsEntry(c);
-        String g=c.group==null?"":c.group.toLowerCase(Locale.ROOT),n=c.name==null?"":c.name.toLowerCase(Locale.ROOT);if(section.equals("FAVORIS")){if(!favorites.contains(c.url))return false;if(activeFilter!=null&&!activeFilter.equals("Tout")){Set<String> group=favoriteGroups.get(activeFilter);return group!=null&&group.contains(c.url);}return true;}if(section.equals("HISTORIQUE"))return hasHistory(c);if(section.equals("GUIDE TV"))return (c.type.equals("live")||c.type.equals("m3u"))&&!c.tvgId.isEmpty();if(section.equals("TV EN DIRECT"))return c.type.equals("live")||c.type.equals("m3u");if(section.equals("FILMS"))return c.type.equals("movie")||g.contains("movie")||g.contains("film")||g.contains("vod");if(section.equals("SÉRIES"))return c.type.equals("series")||g.contains("series");if(section.equals("ANIMÉS"))return g.contains("anime")||g.contains("animation")||g.contains("cartoon")||n.contains("anime");return true;}
+        String g=c.group==null?"":c.group.toLowerCase(Locale.ROOT),n=c.name==null?"":c.name.toLowerCase(Locale.ROOT);if(section.equals("FAVORIS")){if(!favorites.contains(c.url))return false;if(activeFilter!=null&&!activeFilter.equals("Tout")){Set<String> group=favoriteGroups.get(activeFilter);return group!=null&&group.contains(c.url);}return true;}if(section.equals("HISTORIQUE"))return hasHistory(c);if(section.equals("GUIDE TV"))return (c.type.equals("live")||c.type.equals("m3u"))&&!c.tvgId.isEmpty();if(section.equals("TV EN DIRECT"))return c.type.equals("live")||c.type.equals("m3u");if(section.equals("FILMS"))return c.type.equals("movie")||g.contains("movie")||g.contains("film")||g.contains("vod");if(section.equals("SÉRIES"))return c.type.equals("series")||g.contains("series");if(section.equals("ANIMÉS"))return g.contains("anime")||g.contains("animation")||g.contains("cartoon")||n.contains("anime");
+        String categoryText=g+" "+n;
+        if(section.equals("SPORTS"))return matchesAny(categoryText,"sport","football","soccer","basket","tennis","rugby","cricket","formula 1","f1","motogp","volley","boxing","wrestling");
+        if(section.equals("CINÉMA"))return c.type.equals("movie")||matchesAny(categoryText,"cinema","cinéma","movie","film","vod");
+        if(section.equals("DIVERTISSEMENT"))return matchesAny(categoryText,"entertainment","divertissement","variety","variete","reality","show","talk show","comedy","humour","game show");
+        if(section.equals("JEUNESSE"))return matchesAny(categoryText,"kids","children","jeunesse","junior","cartoon","child","preschool","family");
+        if(section.equals("MAGAZINE"))return matchesAny(categoryText,"magazine","lifestyle","fashion","people","actualité magazine","current affairs");
+        if(section.equals("DOCUMENTAIRE"))return matchesAny(categoryText,"documentary","documentaire","discovery","history","nature","wildlife","science doc");
+        if(section.equals("ÉDUCATION"))return matchesAny(categoryText,"education","éducation","educational","learning","school","university","formation","cours");
+        if(section.equals("RELIGION"))return matchesAny(categoryText,"religion","religious","gospel","church","islam","christ","faith","coran","bible");
+        if(section.equals("SCIENCE & TECHNOLOGIE"))return matchesAny(categoryText,"science","technology","technologie","tech","innovation","engineering","informatique","space","astronomy");
+        if(section.equals("NOVELAS"))return matchesAny(categoryText,"novela","novelas","telenovela","soap opera","drama series");
+        return true;}
     private boolean filterMatches(String filter,String group,String name){
         if(filter==null||filter.equals("Tout"))return true;
         String value=((group==null?"":group)+" "+(name==null?"":name)).toLowerCase(Locale.ROOT);
         String f=filter.toLowerCase(Locale.ROOT);
-        if(f.equals("usa"))return value.contains("usa")||value.contains("united states")||value.contains("u.s.")||value.contains("america");
-        if(f.equals("canada"))return value.contains("canada");
-        if(f.equals("germany"))return value.contains("germany")||value.contains("deutschland")||value.contains("allemagne");
-        if(f.equals("espagne"))return value.contains("spain")||value.contains("espagne")||value.contains("españa");
-        if(f.equals("angleterre"))return value.contains("england")||value.contains("united kingdom")||value.contains("uk ")||value.contains("britain")||value.contains("royaume-uni");
-        if(f.equals("réligion")||f.equals("religion"))return value.contains("relig")||value.contains("gospel")||value.contains("church")||value.contains("islam")||value.contains("christ")||value.contains("faith");
-        if(f.equals("documentaire"))return value.contains("documentary")||value.contains("documentaire")||value.contains("discovery")||value.contains("history")||value.contains("nature");
+        String[][] aliases={
+            {"afrique","africa","african","west africa","east africa","north africa","south africa","central africa"},
+            {"europe","european"},
+            {"asie","asia","asian","middle east","moyen-orient"},
+            {"amérique du nord","north america","north-america","nord-améric"},
+            {"amérique du sud","south america","latin america","latino","sud-améric"},
+            {"océanie","oceania","australia","new zealand","pacific"},
+            {"france","french","français","française"},
+            {"togo","togolese"},
+            {"bénin","benin","beninese"},
+            {"côte d’ivoire","cote d'ivoire","ivory coast","ivoir"},
+            {"ghana","ghanaian"},
+            {"nigeria","nigerian"},
+            {"sénégal","senegal","senegalese"},
+            {"cameroun","cameroon","cameroonian"},
+            {"congo","republic of the congo"},
+            {"rdc","dr congo","drc","democratic republic of the congo"},
+            {"afrique du sud","south africa","south african"},
+            {"maroc","morocco","moroccan"},
+            {"algérie","algeria","algerian"},
+            {"tunisie","tunisia","tunisian"},
+            {"égypte","egypt","egyptian"},
+            {"royaume-uni","united kingdom","britain","british","england","uk"},
+            {"allemagne","germany","deutschland","german"},
+            {"espagne","spain","españa","spanish"},
+            {"italie","italy","italian"},
+            {"portugal","portuguese"},
+            {"belgique","belgium","belgian"},
+            {"pays-bas","netherlands","dutch","holland"},
+            {"suisse","switzerland","swiss"},
+            {"usa","united states","u.s.","america","american"},
+            {"canada","canadian"},
+            {"mexique","mexico","mexican"},
+            {"brésil","brazil","brazilian"},
+            {"argentine","argentina"},
+            {"chili","chile","chilean"},
+            {"inde","india","indian"},
+            {"chine","china","chinese"},
+            {"japon","japan","japanese"},
+            {"corée du sud","south korea","korea","korean"},
+            {"turquie","turkey","turkish"},
+            {"arabie saoudite","saudi arabia","saudi"},
+            {"émirats arabes unis","united arab emirates","uae","emirates"},
+            {"australie","australia","australian"},
+            {"nouvelle-zélande","new zealand"}
+        };
+        for(String[] groupAliases:aliases)if(groupAliases[0].equalsIgnoreCase(filter)){
+            for(String alias:groupAliases)if(value.contains(alias))return true;
+            return false;
+        }
         return value.contains(f);
+    }
+    private boolean matchesAny(String value,String... terms){
+        if(value==null)return false;
+        String v=value.toLowerCase(Locale.ROOT);
+        for(String term:terms)if(v.contains(term))return true;
+        return false;
     }
     private void stylePlayerButton(TextView button,boolean focused){
         if(focused){GradientDrawable d=bg(FOCUS_GOLD,10);d.setStroke(dp(2),FOCUS_RED);button.setBackground(d);button.setTextColor(0xFF17111A);button.animate().scaleX(1.08f).scaleY(1.08f).setDuration(110).start();}
@@ -415,7 +476,7 @@ private void loadAllPlaylists(){
         LinearLayout hero=column();GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF33205F,0xFF154A61,0xFF10243B});heroBg.setCornerRadius(dp(18));hero.setBackground(heroBg);hero.setPadding(dp(22),dp(16),dp(18),dp(16));LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,dp(128));hp.topMargin=dp(12);hp.bottomMargin=dp(14);list.addView(hero,hp);
         TextView heroTag=text("À LA UNE  •  MTv",10,0xFFFFD36A,true);hero.addView(heroTag,new LinearLayout.LayoutParams(-1,dp(22)));
         TextView heroTitle=text("Vos chaînes et programmes préférés",20,Color.WHITE,true);hero.addView(heroTitle,new LinearLayout.LayoutParams(-1,dp(38)));
-        TextView heroDetail=text(all.size()+" contenus disponibles  •  "+playlistSources.size()+" source(s) M3U",12,0xFFE0E8F5,false);hero.addView(heroDetail,new LinearLayout.LayoutParams(-1,dp(24)));
+        
         TextView catTitle=text("EXPLORER LES RUBRIQUES",12,0xFFFFC45C,true);catTitle.setLetterSpacing(0.08f);list.addView(catTitle,new LinearLayout.LayoutParams(-1,dp(28)));
         HorizontalScrollView categoryScroll=new HorizontalScrollView(this);categoryScroll.setHorizontalScrollBarEnabled(false);LinearLayout categoryRow=row();categoryScroll.addView(categoryRow);list.addView(categoryScroll,new LinearLayout.LayoutParams(-1,dp(54)));
         String[][] quick={{"TV EN DIRECT","TV EN DIRECT"},{"FILMS","FILMS"},{"SÉRIES","SÉRIES"},{"ANIMÉS","ANIMÉS"},{"MUSIQUE","MUSIQUE"},{"GUIDE TV","GUIDE TV"}};
