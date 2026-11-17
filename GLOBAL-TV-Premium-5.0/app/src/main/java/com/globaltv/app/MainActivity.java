@@ -570,19 +570,7 @@ private void loadAllPlaylists(){
         for(int i=index+1;i<queue.size();i++)if(!failedInCurrentRun.contains(queue.get(i).url))return queue.get(i);
         return null;
     }
-    private boolean matchSectionFor(MediaEntry entry){
-        if(entry==null)return false;
-        if(section.equals("MUSIQUE"))return isMusicEntry(entry);
-        if(section.equals("INFOS"))return isNewsEntry(entry);
-        String group=entry.group==null?"":entry.group.toLowerCase(Locale.ROOT);
-        if(section.equals("FAVORIS"))return favorites.contains(entry.url);
-        if(section.equals("HISTORIQUE"))return hasHistory(entry);
-        if(section.equals("TV EN DIRECT"))return entry.type.equals("live")||entry.type.equals("m3u");
-        if(section.equals("FILMS"))return entry.type.equals("movie")||group.contains("movie")||group.contains("film")||group.contains("vod");
-        if(section.equals("SÉRIES"))return entry.type.equals("series")||group.contains("series");
-        if(section.equals("ANIMÉS"))return isAnimeEntry(entry);
-        return true;
-    }
+    private boolean matchSectionFor(MediaEntry entry){return matchSection(entry);}
     private boolean isAnimeEntry(MediaEntry e){
         String v=((e.name==null?"":e.name)+" "+(e.group==null?"":e.group)).toLowerCase(Locale.ROOT);
         return v.contains("anime")||v.contains("animation")||v.contains("cartoon");
