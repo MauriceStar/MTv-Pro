@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     private final Set<String> failedInCurrentRun=new HashSet<>();
     // Reprises réseau bornées par flux pour éviter les boucles de préparation.
     private final Map<String,Integer> transientRetryAttempts=new HashMap<>();
+    private Runnable pendingPlaybackRetry;
     private EditText search;
     private TextView status,heading,sourceLabel;
     private PlayerView playerView;
@@ -317,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void releasePlayer(){
+        if(pendingPlaybackRetry!=null){mainHandler.removeCallbacks(pendingPlaybackRetry);pendingPlaybackRetry=null;}
         if(playbackSaveRunnable!=null){mainHandler.removeCallbacks(playbackSaveRunnable);playbackSaveRunnable=null;}
         ExoPlayer oldPlayer=player;PlayerView oldView=playerView;LinearLayout oldToolbar=playerToolbar;
         try{if(playerFullscreen&&oldView!=null)togglePlayerExpanded();}catch(Exception e){android.util.Log.w("MTv-Player","Unable to leave fullscreen cleanly",e);}
@@ -893,7 +895,7 @@ private void loadAllPlaylists(){
             }
             activePlayer.addListener(new Player.Listener(){
                 @Override public void onPlaybackStateChanged(int state){
-                    if(state==Player.STATE_READY){MediaEntry playing=currentEntry;recordSuccessfulStream(playing==null?c.url:playing.url);}
+                    if(state==Player.STATE_READY){MediaEntry playing=currentEntry;String readyUrl=playing==null?c.url:playing.url;transientRetryAttempts.remove(readyUrl);recordSuccessfulStream(readyUrl);}
                     else if(state==Player.STATE_ENDED){clearPlaybackPosition(currentEntry);}
                 }
                 @Override public void onPlayerError(androidx.media3.common.PlaybackException e){
@@ -913,7 +915,9 @@ private void loadAllPlaylists(){
                             final int expectedIndex=failedIndex;
                             final String expectedUrl=failedUrl;
                             long retryDelay=retryAttempt==1?1200L:2800L;
-                            mainHandler.postDelayed(()->{
+                            if(pendingPlaybackRetry!=null)mainHandler.removeCallbacks(pendingPlaybackRetry);
+                            pendingPlaybackRetry=()->{
+                                pendingPlaybackRetry=null;
                                 if(player!=activePlayer||destroyed)return;
                                 int currentIndex=activePlayer.getCurrentMediaItemIndex();
                                 if(currentIndex!=expectedIndex||currentIndex<0||currentIndex>=queue.size())return;
@@ -921,7 +925,8 @@ private void loadAllPlaylists(){
                                 if(current==null||!expectedUrl.equals(current.url))return;
                                 activePlayer.prepare();
                                 activePlayer.play();
-                            },retryDelay);
+                            };
+                            mainHandler.postDelayed(pendingPlaybackRetry,retryDelay);
                             return;
                         }
                         transientRetryAttempts.remove(failedUrl);
