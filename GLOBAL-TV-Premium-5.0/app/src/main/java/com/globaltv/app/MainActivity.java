@@ -1236,7 +1236,9 @@ private void loadAllPlaylists(){
                     int selected="manual".equals(mode)?0:("auto".equals(mode)?2:1);
                     new AlertDialog.Builder(this).setTitle("Mode AutoPilot")
                         .setSingleChoiceItems(labels,selected,(choice,index)->{
-                            SharedPreferences.Editor modeEdit=prefs.edit().putString("autopilot_mode",values[index]);\n                            if(index==0)modeEdit.putBoolean("autopilot_enabled",false);\n                            modeEdit.apply();
+                            SharedPreferences.Editor modeEdit=prefs.edit().putString("autopilot_mode",values[index]);
+                            if(index==0)modeEdit.putBoolean("autopilot_enabled",false);
+                            modeEdit.apply();
                             AutoPilotScheduler.sync(this);
                             choice.dismiss();
                             showAutoPilotDialog();
