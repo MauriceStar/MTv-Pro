@@ -320,6 +320,7 @@ public class MainActivity extends AppCompatActivity {
     private void releasePlayer(){
         if(pendingPlaybackRetry!=null){mainHandler.removeCallbacks(pendingPlaybackRetry);pendingPlaybackRetry=null;}
         if(playbackSaveRunnable!=null){mainHandler.removeCallbacks(playbackSaveRunnable);playbackSaveRunnable=null;}
+        transientRetryAttempts.clear();failedInCurrentRun.clear();currentEntry=null;
         ExoPlayer oldPlayer=player;PlayerView oldView=playerView;LinearLayout oldToolbar=playerToolbar;
         try{if(playerFullscreen&&oldView!=null)togglePlayerExpanded();}catch(Exception e){android.util.Log.w("MTv-Player","Unable to leave fullscreen cleanly",e);}
         player=null;playerView=null;playerToolbar=null;
@@ -953,6 +954,7 @@ private void loadAllPlaylists(){
                 @Override public void onMediaItemTransition(MediaItem item,int reason){
                     if(item==null||item.localConfiguration==null||item.localConfiguration.uri==null)return;
                     String uri=item.localConfiguration.uri.toString();
+                    transientRetryAttempts.remove(uri);
                     for(MediaEntry entry:queue)if(entry!=null&&entry.url!=null&&entry.url.equals(uri)){
                         currentEntry=entry;lastPlayedUrl=entry.url;
                         recordHistoryEntry(entry);
