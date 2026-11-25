@@ -924,7 +924,6 @@ private void loadAllPlaylists(){
         if(!universalSearch){ArrayList<MediaEntry> preferredItems=new ArrayList<>(),otherItems=new ArrayList<>();HashSet<String> seenUrls=new HashSet<>();for(MediaEntry entry:activeItems){if(entry==null||entry.url==null||!seenUrls.add(entry.url))continue;if(recentlyPlayable.contains(entry.url))preferredItems.add(entry);else otherItems.add(entry);}preferredItems.addAll(otherItems);activeItems=preferredItems;}
         if(universalSearch){
             ArrayList<MediaEntry> searchItems=new ArrayList<>(activeItems);
-            if(section.equals("MTV"))searchItems.addAll(mtvItems);
             HashSet<String> identities=new HashSet<>();
             for(MediaEntry entry:searchItems)if(entry!=null)identities.add(catalogSearchIdentity(entry));
             for(MediaEntry entry:databaseSearchResults)if(entry!=null&&identities.add(catalogSearchIdentity(entry)))searchItems.add(entry);
