@@ -448,7 +448,6 @@ private void requestProgressiveM3uSearch(String query,String[] tokens,int databa
    HttpURLConnection connection=null;
    String cursorKey=progressiveCursorPreferenceKey(address,query);
    long cursorLines=prefs.getLong(cursorKey,0L);
-   if(cursorLines<0L)continue;
    long safeCursorLines=cursorLines;
    boolean reachedEnd=false;
    try{
@@ -465,6 +464,7 @@ private void requestProgressiveM3uSearch(String query,String[] tokens,int databa
      cursorLines=0L;safeCursorLines=0L;prefs.edit().remove(cursorKey).apply();
     }
     if(!sourceVersion.equals("||"))prefs.edit().putString(versionKey,sourceVersion).apply();
+    if(cursorLines<0L)continue;
     InputStream input=connection.getInputStream();
     if(input==null)continue;
     try(BufferedReader reader=new BufferedReader(new InputStreamReader(input,"UTF-8"))){
