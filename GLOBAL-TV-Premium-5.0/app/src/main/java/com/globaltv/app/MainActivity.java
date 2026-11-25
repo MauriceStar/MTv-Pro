@@ -492,6 +492,7 @@ private void requestProgressiveM3uSearch(String query,String[] tokens,int databa
    mergeProgressiveSearchResults(results);
    normalizedSearchIndex.clear();renderList();
   });
+ });
 }
 
 private void persistCatalogToDatabase(List<MediaEntry> entries,String fallbackSource,int request){
