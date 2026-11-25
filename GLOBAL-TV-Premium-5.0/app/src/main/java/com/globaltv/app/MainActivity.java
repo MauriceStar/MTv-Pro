@@ -1103,7 +1103,7 @@ private void loadAllPlaylists(){
         showVirtualCatalog();
         if(!query.isEmpty())requestDatabaseSearch(query);else{databaseSearchRequestId++;databaseSearchQuery="";databaseSearchResults.clear();}
         boolean universalSearch=!query.isEmpty();
-        List<MediaEntry> source=universalSearch?all:(section.equals("MTV")?mtvItems:all);
+        List<MediaEntry> source=all;
         ArrayList<MediaEntry> candidates=new ArrayList<>(source);
         if(!universalSearch){
             ArrayList<MediaEntry> preferred=new ArrayList<>(),other=new ArrayList<>();
@@ -1111,7 +1111,6 @@ private void loadAllPlaylists(){
             for(MediaEntry entry:candidates){if(entry==null||entry.url==null||!seen.add(entry.url))continue;if(recentlyPlayable.contains(entry.url))preferred.add(entry);else other.add(entry);}
             preferred.addAll(other);candidates=preferred;
         }else{
-            if(section.equals("MTV"))candidates.addAll(mtvItems);
             HashSet<String> identities=new HashSet<>();
             for(MediaEntry entry:candidates)if(entry!=null)identities.add(catalogSearchIdentity(entry));
             for(MediaEntry entry:databaseSearchResults)if(entry!=null&&identities.add(catalogSearchIdentity(entry)))candidates.add(entry);
