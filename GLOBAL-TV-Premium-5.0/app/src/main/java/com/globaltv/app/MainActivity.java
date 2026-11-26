@@ -1074,11 +1074,15 @@ private void loadAllPlaylists(boolean force){
 
     private void renderHome(){
         showLinearCatalog();list.removeAllViews();homeRailFocusCards.clear();
-        LinearLayout hero=row();hero.setGravity(Gravity.CENTER_VERTICAL);GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF101719,0xFF1A2826,0xFF17232B});heroBg.setCornerRadius(dp(15));hero.setBackground(heroBg);hero.setPadding(dp(17),dp(13),dp(14),dp(13));
-        LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,dp(112));heroParams.bottomMargin=dp(10);list.addView(hero,heroParams);
-        LinearLayout copy=column();hero.addView(copy,new LinearLayout.LayoutParams(0,-1,1f));
-        TextView explore=text("⌕",24,0xFF080B0C,true);explore.setId(View.generateViewId());explore.setGravity(Gravity.CENTER);explore.setBackground(bg(0xFFF2C230,9));explore.setFocusable(true);explore.setClickable(true);LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(dp(174),dp(36));ep.topMargin=dp(5);copy.addView(explore,ep);explore.setOnFocusChangeListener((v,f)->stylePlayerButton((TextView)v,f));explore.setOnClickListener(v->navigateTo("TV EN DIRECT"));
-        TextView hubIcon=text("⌘",31,0xFF4D8DFF,true);hubIcon.setGravity(Gravity.CENTER);hero.addView(hubIcon,new LinearLayout.LayoutParams(dp(74),dp(74)));if(search!=null)search.setNextFocusDownId(explore.getId());
+        LinearLayout hero=row();hero.setGravity(Gravity.CENTER_VERTICAL);GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF101719,0xFF1A2826,0xFF17232B});heroBg.setCornerRadius(dp(15));hero.setBackground(heroBg);hero.setPadding(dp(17),dp(10),dp(14),dp(10));
+        LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,dp(132));heroParams.bottomMargin=dp(10);list.addView(hero,heroParams);
+        LinearLayout copy=column();copy.setGravity(Gravity.CENTER_VERTICAL);hero.addView(copy,new LinearLayout.LayoutParams(0,-1,1f));
+        TextView exploreTitle=text("Explorez sans limites",16,Color.WHITE,true);exploreTitle.setMaxLines(1);copy.addView(exploreTitle,new LinearLayout.LayoutParams(-1,dp(25)));
+        TextView exploreHint=text("Accédez rapidement à vos univers préférés.",10,0xFFB7C8C4,false);exploreHint.setMaxLines(1);copy.addView(exploreHint,new LinearLayout.LayoutParams(-1,dp(22)));
+        TextView explore=text("⌕  EXPLORER LES CHAÎNES",10,0xFF080B0C,true);explore.setId(View.generateViewId());explore.setGravity(Gravity.CENTER);explore.setBackground(bg(0xFFF2C230,9));explore.setFocusable(true);explore.setClickable(true);LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(dp(196),dp(36));ep.topMargin=dp(5);copy.addView(explore,ep);explore.setOnFocusChangeListener((v,f)->stylePlayerButton((TextView)v,f));explore.setOnClickListener(v->navigateTo("TV EN DIRECT"));
+        LinearLayout visual=column();visual.setGravity(Gravity.CENTER);hero.addView(visual,new LinearLayout.LayoutParams(dp(86),-1));
+        TextView hubIcon=text("🌐",34,0xFF4D8DFF,true);hubIcon.setGravity(Gravity.CENTER);visual.addView(hubIcon,new LinearLayout.LayoutParams(dp(74),dp(64)));
+        TextView hubHint=text("GLOBAL",8,0xFF78D45B,true);hubHint.setGravity(Gravity.CENTER);hubHint.setLetterSpacing(0.14f);visual.addView(hubHint,new LinearLayout.LayoutParams(-1,dp(18)));if(search!=null)search.setNextFocusDownId(explore.getId());
         TextView quickHeading=text("✨",18,0xFFF2C230,true);quickHeading.setId(View.generateViewId());quickHeading.setFocusable(true);quickHeading.setLetterSpacing(0.12f);explore.setNextFocusDownId(quickHeading.getId());list.addView(quickHeading,new LinearLayout.LayoutParams(-1,dp(34)));
         LinearLayout firstRow=row();list.addView(firstRow,new LinearLayout.LayoutParams(-1,dp(108)));
         LinearLayout secondRow=row();LinearLayout.LayoutParams secondParams=new LinearLayout.LayoutParams(-1,dp(108));secondParams.topMargin=dp(8);list.addView(secondRow,secondParams);
