@@ -1075,7 +1075,7 @@ private void loadAllPlaylists(boolean force){
     private void renderHome(){
         showLinearCatalog();list.removeAllViews();homeRailFocusCards.clear();
         LinearLayout hero=row();hero.setGravity(Gravity.CENTER_VERTICAL);GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF101719,0xFF1A2826,0xFF17232B});heroBg.setCornerRadius(dp(15));hero.setBackground(heroBg);hero.setPadding(dp(17),dp(13),dp(14),dp(13));
-        LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,dp(184));heroParams.bottomMargin=dp(12);list.addView(hero,heroParams);
+        LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,dp(112));heroParams.bottomMargin=dp(10);list.addView(hero,heroParams);
         LinearLayout copy=column();hero.addView(copy,new LinearLayout.LayoutParams(0,-1,1f));
         TextView explore=text("⌕",24,0xFF080B0C,true);explore.setId(View.generateViewId());explore.setGravity(Gravity.CENTER);explore.setBackground(bg(0xFFF2C230,9));explore.setFocusable(true);explore.setClickable(true);LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(dp(174),dp(36));ep.topMargin=dp(5);copy.addView(explore,ep);explore.setOnFocusChangeListener((v,f)->stylePlayerButton((TextView)v,f));explore.setOnClickListener(v->navigateTo("TV EN DIRECT"));
         TextView hubIcon=text("⌘",31,0xFF4D8DFF,true);hubIcon.setGravity(Gravity.CENTER);hero.addView(hubIcon,new LinearLayout.LayoutParams(dp(74),dp(74)));if(search!=null)search.setNextFocusDownId(explore.getId());
