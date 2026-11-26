@@ -489,7 +489,7 @@ private String[] progressiveSearchTokens=new String[0];
     private void addNav(String label,String target){TextView v=text(label,14,0xFFD9E1F2,true);v.setPadding(dp(13),0,dp(8),0);v.setId(View.generateViewId());v.setFocusable(true);v.setClickable(true);v.setBackground(bg(0x00172035,10));navViews.put(target,v);
         v.setOnFocusChangeListener((view,hasFocus)->refreshNavStyle(target,hasFocus));
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(47));p.bottomMargin=dp(3);sidebar.addView(v,p);v.setOnClickListener(w->navigateTo(target));refreshNavStyle(target,v.hasFocus());}
-    private void refreshNavStyle(String target,boolean focused){TextView v=navViews.get(target);if(v==null)return;boolean selected=section.equals(target);if(selected){GradientDrawable d=bg(0xFF273A46,10);d.setStroke(dp(2),0xFF4D8DFF);v.setBackground(d);v.setTextColor(Color.WHITE);}else if(focused){GradientDrawable d=bg(FOCUS_GOLD,10);d.setStroke(dp(2),FOCUS_RED);v.setBackground(d);v.setTextColor(0xFF061A2D);}else{v.setBackground(bg(0x00172035,10));v.setTextColor(0xFFD9E1F2);}}
+    private void refreshNavStyle(String target,boolean focused){TextView v=navViews.get(target);if(v==null)return;boolean selected=section.equals(target);if(focused){GradientDrawable d=bg(FOCUS_GOLD,10);d.setStroke(dp(3),FOCUS_RED);v.setBackground(d);v.setTextColor(0xFF061A2D);}else if(selected){GradientDrawable d=bg(0xFF273A46,10);d.setStroke(dp(2),0xFF4D8DFF);v.setBackground(d);v.setTextColor(Color.WHITE);}else{v.setBackground(bg(0x00172035,10));v.setTextColor(0xFFD9E1F2);}}
     private void refreshAllNavStyles(){for(String target:navViews.keySet())refreshNavStyle(target,navViews.get(target).hasFocus());}
     private void navigateTo(String target){
  if(PROFILE_CHILD.equals(activeProfile)&&isAdultWebSection(target)){Toast.makeText(this,"Cette rubrique est réservée au profil Adulte.",Toast.LENGTH_LONG).show();return;}
@@ -1566,6 +1566,7 @@ private void loadAllPlaylists(boolean force){
             });
             activePlayer.setAudioAttributes(new androidx.media3.common.AudioAttributes.Builder().setUsage(androidx.media3.common.C.USAGE_MEDIA).setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
             activePlayer.setMediaItems(mediaItems,startIndex,resumePosition);activePlayer.prepare();activePlayer.play();
+            mainHandler.post(()->{if(player==activePlayer&&playerView!=null&&!playerFullscreen)togglePlayerExpanded();});
             mainHandler.post(()->{if(player==activePlayer&&playerView!=null&&!playerFullscreen)togglePlayerExpanded();});
             playbackSaveRunnable=()->{if(player!=activePlayer||destroyed)return;savePlaybackPosition();mainHandler.postDelayed(playbackSaveRunnable,15000L);};
             mainHandler.postDelayed(playbackSaveRunnable,15000L);
