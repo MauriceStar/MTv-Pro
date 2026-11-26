@@ -1074,16 +1074,12 @@ private void loadAllPlaylists(boolean force){
 
     private void renderHome(){
         showLinearCatalog();list.removeAllViews();homeRailFocusCards.clear();
-        TextView eyebrow=text("MTv PRO  /  DISCOVERY HUB",11,0xFF4D8DFF,true);eyebrow.setLetterSpacing(0.18f);list.addView(eyebrow,new LinearLayout.LayoutParams(-1,dp(25)));
         LinearLayout hero=row();hero.setGravity(Gravity.CENTER_VERTICAL);GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF101719,0xFF1A2826,0xFF17232B});heroBg.setCornerRadius(dp(15));hero.setBackground(heroBg);hero.setPadding(dp(17),dp(13),dp(14),dp(13));
         LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,dp(184));heroParams.bottomMargin=dp(12);list.addView(hero,heroParams);
         LinearLayout copy=column();hero.addView(copy,new LinearLayout.LayoutParams(0,-1,1f));
-        TextView tag=text("CENTRE DE DÉCOUVERTE",10,0xFF78D45B,true);copy.addView(tag,new LinearLayout.LayoutParams(-1,dp(22)));
-        TextView title=text("Explorez votre univers, à votre façon.",19,Color.WHITE,true);title.setMaxLines(2);copy.addView(title,new LinearLayout.LayoutParams(-1,dp(52)));
-        TextView sub=text("Direct • cinéma • sport • chaînes du monde",10,0xFFB7C4BE,false);copy.addView(sub,new LinearLayout.LayoutParams(-1,dp(22)));
-        TextView explore=text("EXPLORER  →",11,0xFF080B0C,true);explore.setId(View.generateViewId());explore.setGravity(Gravity.CENTER);explore.setBackground(bg(0xFFF2C230,9));explore.setFocusable(true);explore.setClickable(true);LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(dp(174),dp(36));ep.topMargin=dp(5);copy.addView(explore,ep);explore.setOnFocusChangeListener((v,f)->stylePlayerButton((TextView)v,f));explore.setOnClickListener(v->navigateTo("TV EN DIRECT"));
+        TextView explore=text("⌕",24,0xFF080B0C,true);explore.setId(View.generateViewId());explore.setGravity(Gravity.CENTER);explore.setBackground(bg(0xFFF2C230,9));explore.setFocusable(true);explore.setClickable(true);LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(dp(174),dp(36));ep.topMargin=dp(5);copy.addView(explore,ep);explore.setOnFocusChangeListener((v,f)->stylePlayerButton((TextView)v,f));explore.setOnClickListener(v->navigateTo("TV EN DIRECT"));
         TextView hubIcon=text("⌘",31,0xFF4D8DFF,true);hubIcon.setGravity(Gravity.CENTER);hero.addView(hubIcon,new LinearLayout.LayoutParams(dp(74),dp(74)));if(search!=null)search.setNextFocusDownId(explore.getId());
-        TextView quickHeading=text("ACCÈS RAPIDES",12,0xFFF2C230,true);quickHeading.setId(View.generateViewId());quickHeading.setFocusable(true);quickHeading.setLetterSpacing(0.12f);explore.setNextFocusDownId(quickHeading.getId());list.addView(quickHeading,new LinearLayout.LayoutParams(-1,dp(34)));
+        TextView quickHeading=text("✨",18,0xFFF2C230,true);quickHeading.setId(View.generateViewId());quickHeading.setFocusable(true);quickHeading.setLetterSpacing(0.12f);explore.setNextFocusDownId(quickHeading.getId());list.addView(quickHeading,new LinearLayout.LayoutParams(-1,dp(34)));
         LinearLayout firstRow=row();list.addView(firstRow,new LinearLayout.LayoutParams(-1,dp(108)));
         LinearLayout secondRow=row();LinearLayout.LayoutParams secondParams=new LinearLayout.LayoutParams(-1,dp(108));secondParams.topMargin=dp(8);list.addView(secondRow,secondParams);
         LinearLayout thirdRow=row();LinearLayout.LayoutParams thirdParams=new LinearLayout.LayoutParams(-1,dp(108));thirdParams.topMargin=dp(8);list.addView(thirdRow,thirdParams);
@@ -1102,7 +1098,7 @@ private void loadAllPlaylists(boolean force){
         ArrayList<MediaEntry> favs=getHomeFavoriteEntries(8);addHomeRail("VOTRE SÉLECTION  •  FAVORIS",favs,0xFF78D45B);
         ArrayList<MediaEntry> history=getHomeHistoryEntries(8);addHomeRail("REPRISE INTELLIGENTE",history,0xFFF2C230);
         ArrayList<MediaEntry> top=getHomeMostWatchedEntries(8);if(!top.isEmpty())addHomeRail("TOP SUR CET APPAREIL",top,0xFF4D8DFF);
-        TextView explorerHeading=text("EXPLORER PAR UNIVERS",12,0xFF4D8DFF,true);explorerHeading.setId(View.generateViewId());explorerHeading.setFocusable(true);explorerHeading.setLetterSpacing(0.12f);if(!homeRailFocusCards.isEmpty())for(View previous:homeRailFocusCards)previous.setNextFocusDownId(explorerHeading.getId());LinearLayout.LayoutParams ehp=new LinearLayout.LayoutParams(-1,dp(34));ehp.topMargin=dp(10);list.addView(explorerHeading,ehp);homeRailFocusCards.clear();
+        TextView explorerHeading=text("🌍",18,0xFF4D8DFF,true);explorerHeading.setId(View.generateViewId());explorerHeading.setFocusable(true);explorerHeading.setLetterSpacing(0.12f);if(!homeRailFocusCards.isEmpty())for(View previous:homeRailFocusCards)previous.setNextFocusDownId(explorerHeading.getId());LinearLayout.LayoutParams ehp=new LinearLayout.LayoutParams(-1,dp(34));ehp.topMargin=dp(10);list.addView(explorerHeading,ehp);homeRailFocusCards.clear();
         HorizontalScrollView categoryScroll=new HorizontalScrollView(this);categoryScroll.setHorizontalScrollBarEnabled(false);LinearLayout categoryRow=row();categoryScroll.addView(categoryRow);list.addView(categoryScroll,new LinearLayout.LayoutParams(-1,dp(88)));
         String[][] quick=homeQuickCategories();View prevCategory=null;int ci=0;
         for(String[] item:quick){if(!getHomeCategories().contains(item[2]))continue;int accent=(ci%3==0)?0xFFF2C230:(ci%3==1)?0xFF78D45B:0xFF4D8DFF;LinearLayout tile=column();tile.setId(View.generateViewId());tile.setGravity(Gravity.CENTER);tile.setBackground(bg(CARD,10));tile.setFocusable(true);tile.setClickable(true);if(prevCategory==null){explorerHeading.setNextFocusDownId(tile.getId());tile.setNextFocusUpId(explorerHeading.getId());}else{prevCategory.setNextFocusRightId(tile.getId());tile.setNextFocusLeftId(prevCategory.getId());}LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(dp(108),dp(76));tp.rightMargin=dp(8);categoryRow.addView(tile,tp);TextView icon=text(item[0],23,accent,true);icon.setGravity(Gravity.CENTER);tile.addView(icon,new LinearLayout.LayoutParams(-1,dp(39)));TextView label=text(item[1],9,Color.WHITE,true);label.setGravity(Gravity.CENTER);label.setMaxLines(2);tile.addView(label,new LinearLayout.LayoutParams(-1,dp(28)));tile.setOnFocusChangeListener((v,focused)->{if(focused){GradientDrawable d=bg(PANEL,10);d.setStroke(dp(2),accent);v.setBackground(d);}else v.setBackground(bg(CARD,10));});tile.setOnClickListener(v->navigateTo(item[2]));homeRailFocusCards.add(tile);prevCategory=tile;ci++;}
@@ -1570,6 +1566,7 @@ private void loadAllPlaylists(boolean force){
             });
             activePlayer.setAudioAttributes(new androidx.media3.common.AudioAttributes.Builder().setUsage(androidx.media3.common.C.USAGE_MEDIA).setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
             activePlayer.setMediaItems(mediaItems,startIndex,resumePosition);activePlayer.prepare();activePlayer.play();
+            mainHandler.post(()->{if(player==activePlayer&&playerView!=null&&!playerFullscreen)togglePlayerExpanded();});
             playbackSaveRunnable=()->{if(player!=activePlayer||destroyed)return;savePlaybackPosition();mainHandler.postDelayed(playbackSaveRunnable,15000L);};
             mainHandler.postDelayed(playbackSaveRunnable,15000L);
             status.setText("Lecture : "+c.name);
@@ -1584,7 +1581,7 @@ private void loadAllPlaylists(boolean force){
         if(view==null)return;
         if(view!=playerView&&view.isFocusable()){
             view.setOnFocusChangeListener((v,focused)->{
-                if(focused){GradientDrawable d=bg(0xFF4D8DFF,9);d.setStroke(dp(3),0xFFFF7900);v.setBackground(d);v.setElevation(dp(7));}
+                if(focused){GradientDrawable d=bg(FOCUS_GOLD,9);d.setStroke(dp(3),FOCUS_RED);v.setBackground(d);v.setElevation(dp(7));}
                 else{v.setBackgroundColor(Color.TRANSPARENT);v.setElevation(0f);}
             });
         }
