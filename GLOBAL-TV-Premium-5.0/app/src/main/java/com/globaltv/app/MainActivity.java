@@ -1008,10 +1008,19 @@ private void loadAllPlaylists(){
         TextView quickHeading=text("ACCÈS RAPIDES",12,0xFFF2C230,true);quickHeading.setId(View.generateViewId());quickHeading.setFocusable(true);quickHeading.setLetterSpacing(0.12f);explore.setNextFocusDownId(quickHeading.getId());list.addView(quickHeading,new LinearLayout.LayoutParams(-1,dp(34)));
         LinearLayout firstRow=row();list.addView(firstRow,new LinearLayout.LayoutParams(-1,dp(88)));
         LinearLayout secondRow=row();LinearLayout.LayoutParams secondParams=new LinearLayout.LayoutParams(-1,dp(88));secondParams.topMargin=dp(8);list.addView(secondRow,secondParams);
-        LinearLayout[] rows={firstRow,secondRow};String[][] actions={{"▶","DIRECT GLOBAL","Chaînes en direct", "TV EN DIRECT"},{"⚽","SPORTS","Compétitions & sport","SPORTS"},{"▣","CINÉMA & SÉRIES","Films et séries","FILMS"},{"♡","MES FAVORIS","Votre sélection","FAVORIS"}};
-        int[] accents={0xFFF2C230,0xFF78D45B,0xFF4D8DFF,0xFF78D45B};View firstTile=null;View prevTile=null;ArrayList<View> shortcutTiles=new ArrayList<>();
-        for(int i=0;i<actions.length;i++){LinearLayout tile=homeActionTile(actions[i][0],actions[i][1],actions[i][2],accents[i],actions[i][3]);if(firstTile==null)firstTile=tile;if(prevTile!=null&&i%2==1){prevTile.setNextFocusRightId(tile.getId());tile.setNextFocusLeftId(prevTile.getId());}if(i%2==0&&i>0){View above=rows[0].getChildAt(i-2);tile.setNextFocusUpId(above.getId());above.setNextFocusDownId(tile.getId());}LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(84),1f);tp.rightMargin=(i%2==0)?dp(8):0;rows[i/2].addView(tile,tp);shortcutTiles.add(tile);prevTile=tile;}
-        if(firstTile!=null)quickHeading.setNextFocusDownId(firstTile.getId());homeRailFocusCards.clear();homeRailFocusCards.addAll(shortcutTiles);
+        LinearLayout thirdRow=row();LinearLayout.LayoutParams thirdParams=new LinearLayout.LayoutParams(-1,dp(88));thirdParams.topMargin=dp(8);list.addView(thirdRow,thirdParams);
+        LinearLayout[] rows={firstRow,secondRow,thirdRow};String[][] actions={{"▶","DIRECT GLOBAL","Chaînes en direct","TV EN DIRECT"},{"⚽","SPORTS","Compétitions & sport","SPORTS"},{"▣","CINÉMA","Films & VOD","FILMS"},{"▤","SÉRIES","Séries & épisodes","SÉRIES"},{"♡","MES FAVORIS","Votre sélection","FAVORIS"},{"▦","GUIDE TV","Programmes & horaires","GUIDE TV"}};
+        int[] accents={0xFFF2C230,0xFF78D45B,0xFF4D8DFF,0xFF4D8DFF,0xFF78D45B,0xFFF2C230};View firstTile=null;View prevTile=null;ArrayList<View> shortcutTiles=new ArrayList<>();
+        for(int i=0;i<actions.length;i++){
+            LinearLayout tile=homeActionTile(actions[i][0],actions[i][1],actions[i][2],accents[i],actions[i][3]);
+            if(firstTile==null)firstTile=tile;
+            if(prevTile!=null&&i%2==1){prevTile.setNextFocusRightId(tile.getId());tile.setNextFocusLeftId(prevTile.getId());}
+            if(i>=2&&i%2==0){View above=rows[(i/2)-1].getChildAt(0);tile.setNextFocusUpId(above.getId());above.setNextFocusDownId(tile.getId());}
+            if(i>=3&&i%2==1){View above=rows[(i/2)-1].getChildAt(1);tile.setNextFocusUpId(above.getId());above.setNextFocusDownId(tile.getId());}
+            LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(84),1f);tp.rightMargin=(i%2==0)?dp(8):0;rows[i/2].addView(tile,tp);shortcutTiles.add(tile);prevTile=tile;
+        }
+        if(firstTile!=null)quickHeading.setNextFocusDownId(firstTile.getId());
+        homeRailFocusCards.clear();homeRailFocusCards.addAll(shortcutTiles);
         ArrayList<MediaEntry> favs=getHomeFavoriteEntries(8);addHomeRail("VOTRE SÉLECTION  •  FAVORIS",favs,0xFF78D45B);
         ArrayList<MediaEntry> history=getHomeHistoryEntries(8);addHomeRail("REPRISE INTELLIGENTE",history,0xFFF2C230);
         ArrayList<MediaEntry> top=getHomeMostWatchedEntries(8);if(!top.isEmpty())addHomeRail("TOP SUR CET APPAREIL",top,0xFF4D8DFF);
