@@ -1516,7 +1516,7 @@ private void loadAllPlaylists(boolean force){
                         }
                         recordFailedStream(failedUrl);
                         if(nextIndex>=0){
-                            Toast.makeText(MainActivity.this,"Flux indisponible. Passage au suivant…",Toast.LENGTH_SHORT).show();
+                            android.util.Log.i("MTv-Player","Unavailable stream skipped; advancing to next queue item");
                             activePlayer.seekTo(nextIndex,0L);activePlayer.prepare();activePlayer.play();
                         }else{
                             activePlayer.stop();
