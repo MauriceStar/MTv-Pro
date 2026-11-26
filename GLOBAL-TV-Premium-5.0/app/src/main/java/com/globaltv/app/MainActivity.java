@@ -31,6 +31,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -432,7 +433,7 @@ private final ArrayList<MediaEntry> progressiveSearchResults=new ArrayList<>();
         catalogRecycler=new RecyclerView(this);
         catalogRecycler.setId(View.generateViewId());
         catalogRecycler.setFocusable(true);
-        catalogRecycler.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        catalogRecycler.setLayoutManager(new GridLayoutManager(this,2,GridLayoutManager.VERTICAL,false));
         catalogRecycler.setHasFixedSize(true);
         catalogRecycler.setPreserveFocusAfterLayout(true);
         catalogRecycler.setItemAnimator(null);
@@ -997,8 +998,8 @@ private void loadAllPlaylists(){
     private void renderHome(){
         showLinearCatalog();list.removeAllViews();homeRailFocusCards.clear();
         TextView eyebrow=text("MTv PRO  /  DISCOVERY HUB",11,0xFF4D8DFF,true);eyebrow.setLetterSpacing(0.18f);list.addView(eyebrow,new LinearLayout.LayoutParams(-1,dp(25)));
-        LinearLayout hero=row();hero.setGravity(Gravity.CENTER_VERTICAL);GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF101718,0xFF1B2824,0xFF17202A});heroBg.setCornerRadius(dp(15));hero.setBackground(heroBg);hero.setPadding(dp(17),dp(13),dp(14),dp(13));
-        LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,dp(136));heroParams.bottomMargin=dp(12);list.addView(hero,heroParams);
+        LinearLayout hero=row();hero.setGravity(Gravity.CENTER_VERTICAL);GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF101719,0xFF1A2826,0xFF17232B});heroBg.setCornerRadius(dp(15));hero.setBackground(heroBg);hero.setPadding(dp(17),dp(13),dp(14),dp(13));
+        LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,dp(184));heroParams.bottomMargin=dp(12);list.addView(hero,heroParams);
         LinearLayout copy=column();hero.addView(copy,new LinearLayout.LayoutParams(0,-1,1f));
         TextView tag=text("CENTRE DE DÉCOUVERTE",10,0xFF78D45B,true);copy.addView(tag,new LinearLayout.LayoutParams(-1,dp(22)));
         TextView title=text("Explorez votre univers, à votre façon.",19,Color.WHITE,true);title.setMaxLines(2);copy.addView(title,new LinearLayout.LayoutParams(-1,dp(52)));
@@ -1006,8 +1007,8 @@ private void loadAllPlaylists(){
         TextView explore=text("OUVRIR L’EXPLORATEUR  →",10,0xFF080B0C,true);explore.setId(View.generateViewId());explore.setGravity(Gravity.CENTER);explore.setBackground(bg(0xFFF2C230,9));explore.setFocusable(true);explore.setClickable(true);LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(dp(174),dp(36));ep.topMargin=dp(5);copy.addView(explore,ep);explore.setOnFocusChangeListener((v,f)->stylePlayerButton((TextView)v,f));explore.setOnClickListener(v->navigateTo("TV EN DIRECT"));
         TextView hubIcon=text("⌘",31,0xFF4D8DFF,true);hubIcon.setGravity(Gravity.CENTER);hero.addView(hubIcon,new LinearLayout.LayoutParams(dp(74),dp(74)));if(search!=null)search.setNextFocusDownId(explore.getId());
         TextView quickHeading=text("ACCÈS RAPIDES",12,0xFFF2C230,true);quickHeading.setId(View.generateViewId());quickHeading.setFocusable(true);quickHeading.setLetterSpacing(0.12f);explore.setNextFocusDownId(quickHeading.getId());list.addView(quickHeading,new LinearLayout.LayoutParams(-1,dp(34)));
-        LinearLayout firstRow=row();list.addView(firstRow,new LinearLayout.LayoutParams(-1,dp(88)));
-        LinearLayout secondRow=row();LinearLayout.LayoutParams secondParams=new LinearLayout.LayoutParams(-1,dp(88));secondParams.topMargin=dp(8);list.addView(secondRow,secondParams);
+        LinearLayout firstRow=row();list.addView(firstRow,new LinearLayout.LayoutParams(-1,dp(108)));
+        LinearLayout secondRow=row();LinearLayout.LayoutParams secondParams=new LinearLayout.LayoutParams(-1,dp(108));secondParams.topMargin=dp(8);list.addView(secondRow,secondParams);
         LinearLayout thirdRow=row();LinearLayout.LayoutParams thirdParams=new LinearLayout.LayoutParams(-1,dp(88));thirdParams.topMargin=dp(8);list.addView(thirdRow,thirdParams);
         LinearLayout[] rows={firstRow,secondRow,thirdRow};String[][] actions={{"▶","DIRECT GLOBAL","Chaînes en direct","TV EN DIRECT"},{"⚽","SPORTS","Compétitions & sport","SPORTS"},{"▣","CINÉMA","Films & VOD","FILMS"},{"▤","SÉRIES","Séries & épisodes","SÉRIES"},{"♡","MES FAVORIS","Votre sélection","FAVORIS"},{"▦","GUIDE TV","Programmes & horaires","GUIDE TV"}};
         int[] accents={0xFFF2C230,0xFF78D45B,0xFF4D8DFF,0xFF4D8DFF,0xFF78D45B,0xFFF2C230};View firstTile=null;View prevTile=null;ArrayList<View> shortcutTiles=new ArrayList<>();
@@ -1017,7 +1018,7 @@ private void loadAllPlaylists(){
             if(prevTile!=null&&i%2==1){prevTile.setNextFocusRightId(tile.getId());tile.setNextFocusLeftId(prevTile.getId());}
             if(i>=2&&i%2==0){View above=rows[(i/2)-1].getChildAt(0);tile.setNextFocusUpId(above.getId());above.setNextFocusDownId(tile.getId());}
             if(i>=3&&i%2==1){View above=rows[(i/2)-1].getChildAt(1);tile.setNextFocusUpId(above.getId());above.setNextFocusDownId(tile.getId());}
-            LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(84),1f);tp.rightMargin=(i%2==0)?dp(8):0;rows[i/2].addView(tile,tp);shortcutTiles.add(tile);prevTile=tile;
+            LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(100),1f);tp.rightMargin=(i%2==0)?dp(8):0;rows[i/2].addView(tile,tp);shortcutTiles.add(tile);prevTile=tile;
         }
         if(firstTile!=null)quickHeading.setNextFocusDownId(firstTile.getId());
         homeRailFocusCards.clear();homeRailFocusCards.addAll(shortcutTiles);
