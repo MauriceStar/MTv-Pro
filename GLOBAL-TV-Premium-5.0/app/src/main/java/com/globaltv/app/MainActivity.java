@@ -186,7 +186,7 @@ private final ArrayList<MediaEntry> progressiveSearchResults=new ArrayList<>();
         LinearLayout tile=column();tile.setId(View.generateViewId());tile.setGravity(Gravity.CENTER_VERTICAL);tile.setPadding(dp(13),dp(8),dp(10),dp(8));tile.setBackground(bg(CARD,13));tile.setFocusable(true);tile.setClickable(true);
         TextView icon=text(glyph,23,accent,true);icon.setGravity(Gravity.CENTER);tile.addView(icon,new LinearLayout.LayoutParams(-1,dp(31)));
         TextView label=text(title,12,Color.WHITE,true);label.setGravity(Gravity.CENTER);tile.addView(label,new LinearLayout.LayoutParams(-1,dp(22)));
-        TextView hint=text(subtitle,9,MUTED,false);hint.setGravity(Gravity.CENTER);hint.setMaxLines(1);tile.addView(hint,new LinearLayout.LayoutParams(-1,dp(17)));
+        if(subtitle!=null&&!subtitle.isEmpty()){TextView hint=text(subtitle,9,MUTED,false);hint.setGravity(Gravity.CENTER);hint.setMaxLines(1);tile.addView(hint,new LinearLayout.LayoutParams(-1,dp(17)));}
         tile.setOnFocusChangeListener((v,focused)->{if(focused){GradientDrawable d=bg(PANEL,13);d.setStroke(dp(2),accent);v.setBackground(d);v.animate().scaleX(1.035f).scaleY(1.035f).setDuration(100).start();}else{v.setBackground(bg(CARD,13));v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();}});
         tile.setOnClickListener(v->{if("FAVORIS".equals(target)&&favorites.isEmpty()){Toast.makeText(this,"Ajoute d’abord des chaînes à tes favoris.",Toast.LENGTH_SHORT).show();return;}navigateTo(target);});
         return tile;
@@ -1012,8 +1012,8 @@ private void loadAllPlaylists(){
         TextView quickHeading=text("ACCÈS RAPIDES",12,0xFFF2C230,true);quickHeading.setId(View.generateViewId());quickHeading.setFocusable(true);quickHeading.setLetterSpacing(0.12f);explore.setNextFocusDownId(quickHeading.getId());list.addView(quickHeading,new LinearLayout.LayoutParams(-1,dp(34)));
         LinearLayout firstRow=row();list.addView(firstRow,new LinearLayout.LayoutParams(-1,dp(108)));
         LinearLayout secondRow=row();LinearLayout.LayoutParams secondParams=new LinearLayout.LayoutParams(-1,dp(108));secondParams.topMargin=dp(8);list.addView(secondRow,secondParams);
-        LinearLayout thirdRow=row();LinearLayout.LayoutParams thirdParams=new LinearLayout.LayoutParams(-1,dp(88));thirdParams.topMargin=dp(8);list.addView(thirdRow,thirdParams);
-        LinearLayout[] rows={firstRow,secondRow,thirdRow};String[][] actions={{"▶","DIRECT GLOBAL","Chaînes en direct","TV EN DIRECT"},{"⚽","SPORTS","Compétitions & sport","SPORTS"},{"▣","CINÉMA","Films & VOD","FILMS"},{"▤","SÉRIES","Séries & épisodes","SÉRIES"},{"♡","MES FAVORIS","Votre sélection","FAVORIS"},{"▦","GUIDE TV","Programmes & horaires","GUIDE TV"}};
+        LinearLayout thirdRow=row();LinearLayout.LayoutParams thirdParams=new LinearLayout.LayoutParams(-1,dp(108));thirdParams.topMargin=dp(8);list.addView(thirdRow,thirdParams);
+        LinearLayout[] rows={firstRow,secondRow,thirdRow};String[][] actions={{"📡","DIRECT GLOBAL","","TV EN DIRECT"},{"⚽","SPORTS","","SPORTS"},{"🎬","CINÉMA","","FILMS"},{"📺","SÉRIES","","SÉRIES"},{"💚","MES FAVORIS","","FAVORIS"},{"🗓️","GUIDE TV","","GUIDE TV"}};
         int[] accents={0xFFF2C230,0xFF78D45B,0xFF4D8DFF,0xFF4D8DFF,0xFF78D45B,0xFFF2C230};View firstTile=null;View prevTile=null;ArrayList<View> shortcutTiles=new ArrayList<>();
         for(int i=0;i<actions.length;i++){
             LinearLayout tile=homeActionTile(actions[i][0],actions[i][1],actions[i][2],accents[i],actions[i][3]);
