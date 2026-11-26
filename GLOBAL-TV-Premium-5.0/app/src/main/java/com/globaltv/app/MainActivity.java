@@ -1228,7 +1228,7 @@ private void loadAllPlaylists(){
         final String filterSnapshot=activeFilter;
         final String profileSnapshot=activeProfile;
         final boolean universalSearch=!query.isEmpty();
-        List<MediaEntry> source=sectionSnapshot.equals("MTV")?mtvItems:all;
+        List<MediaEntry> source=all;
         final ArrayList<MediaEntry> sourceSnapshot=new ArrayList<>(source);
         final ArrayList<MediaEntry> databaseSnapshot=new ArrayList<>(databaseSearchResults);
         final HashSet<String> recentSnapshot=new HashSet<>(recentlyPlayable);
@@ -1248,7 +1248,6 @@ private void loadAllPlaylists(){
                 }
                 preferred.addAll(other);candidates=preferred;
             }else{
-                if(sectionSnapshot.equals("MTV"))candidates.addAll(new ArrayList<>(mtvItems));
                 HashSet<String> identities=new HashSet<>();
                 for(MediaEntry entry:candidates)if(entry!=null)identities.add(catalogSearchIdentity(entry));
                 for(MediaEntry entry:databaseSnapshot)if(entry!=null&&identities.add(catalogSearchIdentity(entry)))candidates.add(entry);
