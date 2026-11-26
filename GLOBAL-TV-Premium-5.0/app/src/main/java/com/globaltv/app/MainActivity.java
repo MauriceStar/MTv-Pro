@@ -1315,13 +1315,16 @@ private void loadAllPlaylists(boolean force){
             ArrayList<MediaEntry> visible;
             if(universalSearch){
                 visible=new ArrayList<>();
+                int scanned=0;
                 for(MediaEntry entry:sourceSnapshot){
+                    if((++scanned&127)==0&&(request!=catalogRequestId||destroyed))return;
                     if(entry==null||entry.url==null||entry.url.isEmpty())continue;
                     if(PROFILE_CHILD.equals(profileSnapshot)&&isAdultEntry(entry))continue;
                     if(!seenEntries.add(catalogSearchIdentity(entry)))continue;
                     if(matchesUniversalSearch(entry,query))visible.add(entry);
                 }
                 for(MediaEntry entry:databaseSnapshot){
+                    if((++scanned&127)==0&&(request!=catalogRequestId||destroyed))return;
                     if(entry==null||entry.url==null||entry.url.isEmpty())continue;
                     if(PROFILE_CHILD.equals(profileSnapshot)&&isAdultEntry(entry))continue;
                     if(!seenEntries.add(catalogSearchIdentity(entry)))continue;
@@ -1330,7 +1333,9 @@ private void loadAllPlaylists(boolean force){
             }else{
                 ArrayList<MediaEntry> preferred=new ArrayList<>();
                 ArrayList<MediaEntry> other=new ArrayList<>();
+                int scanned=0;
                 for(MediaEntry entry:sourceSnapshot){
+                    if((++scanned&127)==0&&(request!=catalogRequestId||destroyed))return;
                     if(entry==null||entry.url==null||entry.url.isEmpty())continue;
                     if(!seenEntries.add(entry.url))continue;
                     if(PROFILE_CHILD.equals(profileSnapshot)&&isAdultEntry(entry))continue;
@@ -1341,6 +1346,7 @@ private void loadAllPlaylists(boolean force){
                 other.clear();
                 visible=preferred;
             }
+            if(request!=catalogRequestId||destroyed)return;
             final ArrayList<MediaEntry> result=visible;
             postUi(()->{
                 if(request!=catalogRequestId||!sectionSnapshot.equals(section))return;
