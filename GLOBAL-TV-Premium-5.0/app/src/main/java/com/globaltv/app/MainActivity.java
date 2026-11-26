@@ -1507,6 +1507,7 @@ private void loadAllPlaylists(boolean force){
                             mainHandler.postDelayed(pendingPlaybackRetry,retryDelay);
                             return;
                         }
+                        if(pendingPlaybackRetry!=null){mainHandler.removeCallbacks(pendingPlaybackRetry);pendingPlaybackRetry=null;}
                         transientRetryAttempts.remove(failedUrl);
                         failedInCurrentRun.add(failedUrl);
                         int nextIndex=-1;
