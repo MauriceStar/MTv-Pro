@@ -1383,7 +1383,6 @@ private void loadAllPlaylists(boolean force){
         final String profileSnapshot=activeProfile;
         final boolean universalSearch=!query.isEmpty();
         List<MediaEntry> source=catalogSnapshot;
-        if(source.indexOf(selected)<0&&!localDatabaseSnapshot.isEmpty())source=localDatabaseSnapshot;
         final ArrayList<MediaEntry> sourceSnapshot=new ArrayList<>(source);
         final ArrayList<MediaEntry> databaseSnapshot=new ArrayList<>(databaseSearchResults);
         final HashSet<String> recentSnapshot=new HashSet<>(recentlyPlayable);
@@ -1477,6 +1476,7 @@ private void loadAllPlaylists(boolean force){
     private void play(MediaEntry c){countedWatchUrls.clear();failedInCurrentRun.clear();transientRetryAttempts.clear();startPlayer(c);}
     private List<MediaEntry> playableQueue(MediaEntry selected){
         List<MediaEntry> source=catalogSnapshot;
+        if(source.indexOf(selected)<0&&!localDatabaseSnapshot.isEmpty())source=localDatabaseSnapshot;
         ArrayList<MediaEntry> queue=new ArrayList<>();
         String query=search==null?"":search.getText().toString().toLowerCase(Locale.ROOT);
         // Construire uniquement la suite autour de la chaîne choisie : ne pas allouer
