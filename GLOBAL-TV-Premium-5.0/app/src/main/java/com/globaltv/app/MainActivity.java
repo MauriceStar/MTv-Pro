@@ -1571,7 +1571,6 @@ private void loadAllPlaylists(boolean force){
             activePlayer.setAudioAttributes(new androidx.media3.common.AudioAttributes.Builder().setUsage(androidx.media3.common.C.USAGE_MEDIA).setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
             activePlayer.setMediaItems(mediaItems,startIndex,resumePosition);activePlayer.prepare();activePlayer.play();
             mainHandler.post(()->{if(player==activePlayer&&playerView!=null&&!playerFullscreen)togglePlayerExpanded();});
-            mainHandler.post(()->{if(player==activePlayer&&playerView!=null&&!playerFullscreen)togglePlayerExpanded();});
             playbackSaveRunnable=()->{if(player!=activePlayer||destroyed)return;savePlaybackPosition();mainHandler.postDelayed(playbackSaveRunnable,15000L);};
             mainHandler.postDelayed(playbackSaveRunnable,15000L);
             status.setText("Lecture : "+c.name);
