@@ -1075,6 +1075,45 @@ private void loadAllPlaylists(boolean force){
             }).show();
     }
 
+    private boolean isNetworkConnected(){
+        try{
+            android.net.ConnectivityManager manager=(android.net.ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+            android.net.NetworkInfo info=manager==null?null:manager.getActiveNetworkInfo();
+            return info!=null&&info.isConnected();
+        }catch(Exception ignored){return false;}
+    }
+    private void addSignalMeter(LinearLayout panel,int accent){
+        boolean connected=isNetworkConnected();
+        LinearLayout meter=row();meter.setGravity(Gravity.CENTER);panel.addView(meter,new LinearLayout.LayoutParams(-1,dp(54)));
+        ArrayList<View> bars=new ArrayList<>();
+        for(int i=0;i<7;i++){
+            View bar=new View(this);
+            GradientDrawable shape=bg(connected?accent:0xFF65717D,4);
+            bar.setBackground(shape);
+            LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(dp(6),dp(8+i*2));
+            params.leftMargin=dp(2);params.rightMargin=dp(2);
+            meter.addView(bar,params);bars.add(bar);
+        }
+        TextView label=text(connected?"RÉSEAU DISPONIBLE":"HORS LIGNE",8,connected?accent:0xFF9AA4AE,true);
+        label.setGravity(Gravity.CENTER);label.setLetterSpacing(0.07f);
+        LinearLayout.LayoutParams labelParams=new LinearLayout.LayoutParams(-1,dp(20));labelParams.topMargin=dp(3);panel.addView(label,labelParams);
+        ValueAnimator animation=ValueAnimator.ofFloat(0f,1f);animation.setDuration(1050L);animation.setRepeatCount(ValueAnimator.INFINITE);animation.setRepeatMode(ValueAnimator.RESTART);
+        animation.addUpdateListener(value->{
+            float phase=(Float)value.getAnimatedValue();
+            for(int i=0;i<bars.size();i++){
+                float wave=(float)((Math.sin((phase*Math.PI*2)+(i*0.82))+1d)*0.5d);
+                int height=connected?dp(8)+(int)(wave*dp(34)):dp(5)+(int)(wave*dp(3));
+                View bar=bars.get(i);LinearLayout.LayoutParams params=(LinearLayout.LayoutParams)bar.getLayoutParams();
+                if(params.height!=height){params.height=height;bar.setLayoutParams(params);}
+                bar.setAlpha(connected?0.65f+wave*0.35f:0.45f);
+            }
+        });
+        panel.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){
+            public void onViewAttachedToWindow(View view){if(!animation.isStarted())animation.start();}
+            public void onViewDetachedFromWindow(View view){animation.cancel();}
+        });
+        if(panel.isAttachedToWindow())animation.start();
+    }
     private void renderHome(){
         showLinearCatalog();list.removeAllViews();homeRailFocusCards.clear();
         LinearLayout hero=row();hero.setGravity(Gravity.CENTER_VERTICAL);GradientDrawable heroBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xFF101719,0xFF1A2826,0xFF17232B});heroBg.setCornerRadius(dp(15));hero.setBackground(heroBg);hero.setPadding(dp(17),dp(10),dp(14),dp(10));
@@ -1083,9 +1122,8 @@ private void loadAllPlaylists(boolean force){
         TextView exploreTitle=text("Explorez sans limites",16,Color.WHITE,true);exploreTitle.setMaxLines(1);copy.addView(exploreTitle,new LinearLayout.LayoutParams(-1,dp(25)));
         TextView exploreHint=text("Accédez rapidement à vos univers préférés.",10,0xFFB7C8C4,false);exploreHint.setMaxLines(1);copy.addView(exploreHint,new LinearLayout.LayoutParams(-1,dp(22)));
         TextView explore=text("⌕  EXPLORER LES CHAÎNES",10,0xFF080B0C,true);explore.setId(View.generateViewId());explore.setGravity(Gravity.CENTER);explore.setBackground(bg(0xFFF2C230,9));explore.setFocusable(true);explore.setClickable(true);LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(dp(196),dp(36));ep.topMargin=dp(5);copy.addView(explore,ep);explore.setOnFocusChangeListener((v,f)->stylePlayerButton((TextView)v,f));explore.setOnClickListener(v->navigateTo("TV EN DIRECT"));
-        LinearLayout visual=column();visual.setGravity(Gravity.CENTER);hero.addView(visual,new LinearLayout.LayoutParams(dp(86),-1));
-        TextView hubIcon=text("🌐",34,0xFF4D8DFF,true);hubIcon.setGravity(Gravity.CENTER);visual.addView(hubIcon,new LinearLayout.LayoutParams(dp(74),dp(64)));
-        TextView hubHint=text("GLOBAL",8,0xFF78D45B,true);hubHint.setGravity(Gravity.CENTER);hubHint.setLetterSpacing(0.14f);visual.addView(hubHint,new LinearLayout.LayoutParams(-1,dp(18)));if(search!=null)search.setNextFocusDownId(explore.getId());
+        LinearLayout visual=column();visual.setGravity(Gravity.CENTER);hero.addView(visual,new LinearLayout.LayoutParams(dp(96),-1));
+        addSignalMeter(visual,0xFF78D45B);if(search!=null)search.setNextFocusDownId(explore.getId());
         TextView quickHeading=text("✨",18,0xFFF2C230,true);quickHeading.setId(View.generateViewId());quickHeading.setFocusable(true);quickHeading.setLetterSpacing(0.12f);explore.setNextFocusDownId(quickHeading.getId());list.addView(quickHeading,new LinearLayout.LayoutParams(-1,dp(34)));
         LinearLayout firstRow=row();list.addView(firstRow,new LinearLayout.LayoutParams(-1,dp(108)));
         LinearLayout secondRow=row();LinearLayout.LayoutParams secondParams=new LinearLayout.LayoutParams(-1,dp(108));secondParams.topMargin=dp(8);list.addView(secondRow,secondParams);
