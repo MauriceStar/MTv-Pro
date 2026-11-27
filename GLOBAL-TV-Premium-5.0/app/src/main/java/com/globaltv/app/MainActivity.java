@@ -1338,8 +1338,6 @@ private void loadAllPlaylists(boolean force){
         List<MediaEntry> source=catalogSnapshot;
         final ArrayList<MediaEntry> sourceSnapshot=new ArrayList<>(source);
         final ArrayList<MediaEntry> databaseSnapshot=new ArrayList<>(databaseSearchResults);
-        final List<MediaEntry> localSectionSnapshot=universalSearch||sectionSnapshot.equals("MTV")||sectionSnapshot.equals("HISTORIQUE")||sectionSnapshot.equals("FAVORIS")
-            ?Collections.emptyList():getLocalDatabaseSnapshot();
         final HashSet<String> recentSnapshot=new HashSet<>(recentlyPlayable);
         final int sourceCount=all.size();
         if(search!=null){
@@ -1347,6 +1345,8 @@ private void loadAllPlaylists(boolean force){
             else if(chips!=null&&chips.getChildCount()>0)search.setNextFocusDownId(chips.getChildAt(0).getId());
         }
         executeIo(()->{
+            List<MediaEntry> localSectionSnapshot=universalSearch||sectionSnapshot.equals("MTV")||sectionSnapshot.equals("HISTORIQUE")||sectionSnapshot.equals("FAVORIS")
+                ?Collections.emptyList():getLocalDatabaseSnapshot();
             HashSet<String> seenEntries=new HashSet<>();
             ArrayList<MediaEntry> visible;
             if(universalSearch){
