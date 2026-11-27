@@ -1541,6 +1541,7 @@ private void loadAllPlaylists(boolean force){
                             MediaEntry candidate=queue.get(i);
                             if(candidate!=null&&candidate.url!=null&&!failedInCurrentRun.contains(candidate.url)){nextIndex=i;break;}
                         }
+                        if(prefs!=null&&failedUrl!=null){String failedKey=key(failedUrl);prefs.edit().remove("position_"+failedKey).remove("duration_"+failedKey).apply();}
                         recordFailedStream(failedUrl);
                         if(nextIndex>=0){
                             android.util.Log.i("MTv-Player","Unavailable stream skipped; advancing to next queue item");
@@ -1973,7 +1974,8 @@ private void loadAllPlaylists(boolean force){
     }
     private void clearPlaybackPosition(MediaEntry entry){
         if(!isResumableEntry(entry)||prefs==null)return;
-        prefs.edit().remove("position_"+key(entry.url)).apply();
+        String entryKey=key(entry.url);
+        prefs.edit().remove("position_"+entryKey).remove("duration_"+entryKey).apply();
     }
     private void savePlaybackPosition(){
         ExoPlayer active=player;
