@@ -1377,6 +1377,7 @@ private void loadAllPlaylists(boolean force){
         final String profileSnapshot=activeProfile;
         final boolean universalSearch=!query.isEmpty();
         List<MediaEntry> source=catalogSnapshot;
+        if(source.indexOf(selected)<0&&!localDatabaseSnapshot.isEmpty())source=localDatabaseSnapshot;
         final ArrayList<MediaEntry> sourceSnapshot=new ArrayList<>(source);
         final ArrayList<MediaEntry> databaseSnapshot=new ArrayList<>(databaseSearchResults);
         final HashSet<String> recentSnapshot=new HashSet<>(recentlyPlayable);
