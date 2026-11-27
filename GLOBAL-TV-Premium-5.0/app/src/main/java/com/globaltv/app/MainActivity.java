@@ -1475,7 +1475,7 @@ private void loadAllPlaylists(boolean force){
     }
     private void play(MediaEntry c){countedWatchUrls.clear();failedInCurrentRun.clear();transientRetryAttempts.clear();startPlayer(c);}
     private List<MediaEntry> playableQueue(MediaEntry selected){
-        List<MediaEntry> source=section.equals("MTV")?mtvCatalogSnapshot:catalogSnapshot;
+        List<MediaEntry> source=catalogSnapshot;
         if(selected!=null&&source.indexOf(selected)<0&&!localDatabaseSnapshot.isEmpty())source=localDatabaseSnapshot;
         ArrayList<MediaEntry> queue=new ArrayList<>();
         if(selected==null||selected.url==null||source.isEmpty()){if(selected!=null)queue.add(selected);return queue;}
