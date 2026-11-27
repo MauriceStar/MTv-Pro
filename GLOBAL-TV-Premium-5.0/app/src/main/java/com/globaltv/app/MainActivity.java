@@ -214,6 +214,8 @@ private String[] progressiveSearchTokens=new String[0];
     private final ArrayList<MediaEntry> all=new ArrayList<>();
     // Snapshot immuable publié uniquement lors d'un changement réel du catalogue.
     private volatile List<MediaEntry> catalogSnapshot=Collections.emptyList();
+    private volatile List<MediaEntry> localDatabaseSnapshot=Collections.emptyList();
+    private volatile boolean localDatabaseLoaded=false;
     private final Set<String> favorites=new HashSet<>();
     private final Set<String> historyKeysCache=new HashSet<>();
     private final LinkedHashSet<String> recentlyPlayable=new LinkedHashSet<>();
@@ -505,7 +507,7 @@ private String[] progressiveSearchTokens=new String[0];
  renderList();
  if(target.equals("PARAMÈTRES"))showSettings();else{TextView selectedNav=navViews.get(target);if(selectedNav!=null)selectedNav.requestFocus();}
 }
-    private void updateChips(){if(chips==null)return;chips.removeAllViews();if(chipScroll!=null)chipScroll.setVisibility(section.equals("ACCUEIL")?View.GONE:View.VISIBLE);String[] opts;if(section.equals("FAVORIS")){ArrayList<String> values=new ArrayList<>();values.add("Tout");values.addAll(favoriteGroups.keySet());values.add("＋ Créer une liste");opts=values.toArray(new String[0]);}else opts=new String[]{"Tout","Afrique","Europe","Asie","Amérique du Nord","Amérique du Sud","Océanie","Togo","Bénin","Côte d’Ivoire","Ghana","Nigeria","Sénégal","Cameroun","Congo","RDC","Afrique du Sud","Maroc","Algérie","Tunisie","Égypte","Kenya","Ouganda","Tanzanie","Éthiopie","Rwanda","Zambie","France","Royaume-Uni","Allemagne","Espagne","Italie","Portugal","Belgique","Pays-Bas","Suisse","Autriche","Suède","Norvège","Danemark","Grèce","Pologne","Russie","USA","Canada","Mexique","Brésil","Argentine","Colombie","Chili","Pérou","Uruguay","Équateur","Inde","Chine","Japon","Corée du Sud","Pakistan","Bangladesh","Indonésie","Philippines","Thaïlande","Vietnam","Malaisie","Singapour","Turquie","Arabie saoudite","Émirats arabes unis","Australie","Nouvelle-Zélande","Fidji","Papouasie-Nouvelle-Guinée"};int previousId=View.NO_ID;for(String value:opts){final String filter=value;TextView c=text(value,12,activeFilter.equals(value)?Color.WHITE:0xFFB8C4D8,true);c.setGravity(Gravity.CENTER);c.setPadding(dp(15),0,dp(15),0);c.setBackground(bg(activeFilter.equals(value)?ACCENT:CARD,18));c.setFocusable(true);c.setFocusableInTouchMode(true);c.setClickable(true);c.setId(View.generateViewId());c.setNextFocusUpId(search.getId());if(previousId!=View.NO_ID)c.setNextFocusLeftId(previousId);if(previousId!=View.NO_ID)chips.getChildAt(chips.getChildCount()-1).setNextFocusRightId(c.getId());previousId=c.getId();c.setOnFocusChangeListener((v,focus)->{if(focus){if(filter.equals(activeFilter)){GradientDrawable d=bg(ACCENT,18);d.setStroke(dp(2),FOCUS_GOLD);v.setBackground(d);((TextView)v).setTextColor(Color.WHITE);}else{GradientDrawable d=bg(FOCUS_GOLD,18);d.setStroke(dp(2),FOCUS_RED);v.setBackground(d);((TextView)v).setTextColor(0xFF061A2D);}Rect rect=new Rect();v.getDrawingRect(rect);chipScroll.requestChildRectangleOnScreen(v,rect,true);}else{v.setBackground(bg(filter.equals(activeFilter)?ACCENT:CARD,18));((TextView)v).setTextColor(filter.equals(activeFilter)?Color.WHITE:0xFFB8C4D8);}});c.setOnKeyListener((v,keyCode,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;if(keyCode==KeyEvent.KEYCODE_DPAD_CENTER||keyCode==KeyEvent.KEYCODE_ENTER){v.performClick();return true;}if(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT||keyCode==KeyEvent.KEYCODE_DPAD_LEFT){int idx=chips.indexOfChild(v),next=idx+(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1);if(next>=0&&next<chips.getChildCount()){chips.getChildAt(next).requestFocus();return true;}}if(keyCode==KeyEvent.KEYCODE_DPAD_DOWN){focusFirstCatalogItem();return true;}return false;});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(38));p.rightMargin=dp(8);chips.addView(c,p);c.setOnClickListener(v->{if(section.equals("FAVORIS")&&filter.equals("＋ Créer une liste")){showCreateFavoriteGroup();return;}activeFilter=filter;maxRenderItems=120;updateChips();renderList();for(int i=0;i<chips.getChildCount();i++){View selected=chips.getChildAt(i);if(selected instanceof TextView&&filter.equals(((TextView)selected).getText().toString())){selected.requestFocus();break;}}});}search.setNextFocusDownId(chips.getChildAt(0).getId());}
+    private void updateChips(){if(chips==null)return;chips.removeAllViews();if(chipScroll!=null)chipScroll.setVisibility(section.equals("ACCUEIL")?View.GONE:View.VISIBLE);String[] opts;if(section.equals("FAVORIS")){ArrayList<String> values=new ArrayList<>();values.add("Tout");values.addAll(favoriteGroups.keySet());values.add("＋ Créer une liste");opts=values.toArray(new String[0]);}else opts=new String[]{"Tout","Afrique","Europe","Asie","Amérique du Nord","Amérique du Sud","Océanie","France","Togo","Bénin","Côte d’Ivoire","Ghana","Nigeria","Sénégal","Cameroun","Congo","RDC","Afrique du Sud","Maroc","Algérie","Tunisie","Égypte","Kenya","Ouganda","Tanzanie","Éthiopie","Rwanda","Zambie","Royaume-Uni","Allemagne","Espagne","Italie","Portugal","Belgique","Pays-Bas","Suisse","Autriche","Suède","Norvège","Danemark","Grèce","Pologne","Russie","USA","Canada","Mexique","Brésil","Argentine","Colombie","Chili","Pérou","Uruguay","Équateur","Inde","Chine","Japon","Corée du Sud","Pakistan","Bangladesh","Indonésie","Philippines","Thaïlande","Vietnam","Malaisie","Singapour","Turquie","Arabie saoudite","Émirats arabes unis","Australie","Nouvelle-Zélande","Fidji","Papouasie-Nouvelle-Guinée"};int previousId=View.NO_ID;for(String value:opts){final String filter=value;TextView c=text(value,12,activeFilter.equals(value)?Color.WHITE:0xFFB8C4D8,true);c.setGravity(Gravity.CENTER);c.setPadding(dp(15),0,dp(15),0);c.setBackground(bg(activeFilter.equals(value)?ACCENT:CARD,18));c.setFocusable(true);c.setFocusableInTouchMode(true);c.setClickable(true);c.setId(View.generateViewId());c.setNextFocusUpId(search.getId());if(previousId!=View.NO_ID)c.setNextFocusLeftId(previousId);if(previousId!=View.NO_ID)chips.getChildAt(chips.getChildCount()-1).setNextFocusRightId(c.getId());previousId=c.getId();c.setOnFocusChangeListener((v,focus)->{if(focus){if(filter.equals(activeFilter)){GradientDrawable d=bg(ACCENT,18);d.setStroke(dp(2),FOCUS_GOLD);v.setBackground(d);((TextView)v).setTextColor(Color.WHITE);}else{GradientDrawable d=bg(FOCUS_GOLD,18);d.setStroke(dp(2),FOCUS_RED);v.setBackground(d);((TextView)v).setTextColor(0xFF061A2D);}Rect rect=new Rect();v.getDrawingRect(rect);chipScroll.requestChildRectangleOnScreen(v,rect,true);}else{v.setBackground(bg(filter.equals(activeFilter)?ACCENT:CARD,18));((TextView)v).setTextColor(filter.equals(activeFilter)?Color.WHITE:0xFFB8C4D8);}});c.setOnKeyListener((v,keyCode,event)->{if(event.getAction()!=KeyEvent.ACTION_DOWN)return false;if(keyCode==KeyEvent.KEYCODE_DPAD_CENTER||keyCode==KeyEvent.KEYCODE_ENTER){v.performClick();return true;}if(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT||keyCode==KeyEvent.KEYCODE_DPAD_LEFT){int idx=chips.indexOfChild(v),next=idx+(keyCode==KeyEvent.KEYCODE_DPAD_RIGHT?1:-1);if(next>=0&&next<chips.getChildCount()){chips.getChildAt(next).requestFocus();return true;}}if(keyCode==KeyEvent.KEYCODE_DPAD_DOWN){focusFirstCatalogItem();return true;}return false;});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,dp(38));p.rightMargin=dp(8);chips.addView(c,p);c.setOnClickListener(v->{if(section.equals("FAVORIS")&&filter.equals("＋ Créer une liste")){showCreateFavoriteGroup();return;}activeFilter=filter;maxRenderItems=120;updateChips();renderList();for(int i=0;i<chips.getChildCount();i++){View selected=chips.getChildAt(i);if(selected instanceof TextView&&filter.equals(((TextView)selected).getText().toString())){selected.requestFocus();break;}}});}search.setNextFocusDownId(chips.getChildAt(0).getId());}
 
 
     private void executeIo(Runnable task){
@@ -787,6 +789,7 @@ private boolean persistCatalogToDatabase(List<MediaEntry> entries,String fallbac
    if(request!=catalogRequestId||destroyed)return false;
    dao.upsertAll(batch);persistedRows+=batch.size();
   }
+  if(persistedRows>0){localDatabaseLoaded=false;localDatabaseSnapshot=Collections.emptyList();}
   return persistedRows>0&&request==catalogRequestId&&!destroyed;
  }catch(Exception e){android.util.Log.w("MTv-Catalog","Local catalog persistence failed",e);return false;}
 }
@@ -932,7 +935,7 @@ private void loadAllPlaylists(boolean force){
         if(c==null||c.url==null||c.url.isEmpty())return false;
         if(section.equals("MUSIQUE"))return isMusicEntry(c);
         if(section.equals("INFOS"))return isNewsEntry(c);
-        String g=c.group==null?"":c.group.toLowerCase(Locale.ROOT),n=c.name==null?"":c.name.toLowerCase(Locale.ROOT);if(section.equals("FAVORIS")){if(!favorites.contains(c.url))return false;if(activeFilter!=null&&!activeFilter.equals("Tout")){Set<String> group=favoriteGroups.get(activeFilter);return group!=null&&group.contains(c.url);}return true;}if(section.equals("HISTORIQUE"))return hasHistory(c);if(section.equals("GUIDE TV"))return (c.type.equals("live")||c.type.equals("m3u"))&&!c.tvgId.isEmpty();String type=c.type==null?"":c.type;if(section.equals("TV EN DIRECT"))return type.equals("live")||type.equals("m3u");if(section.equals("FILMS"))return type.equals("movie")||g.contains("movie")||g.contains("film")||g.contains("vod");if(section.equals("SÉRIES"))return type.equals("series")||g.contains("series");if(section.equals("ANIMÉS"))return g.contains("anime")||g.contains("animation")||g.contains("cartoon")||n.contains("anime");
+        String g=c.group==null?"":c.group.toLowerCase(Locale.ROOT),n=c.name==null?"":c.name.toLowerCase(Locale.ROOT);if(section.equals("FAVORIS")){if(!favorites.contains(c.url))return false;if(activeFilter!=null&&!activeFilter.equals("Tout")){Set<String> group=favoriteGroups.get(activeFilter);return group!=null&&group.contains(c.url);}return true;}if(section.equals("HISTORIQUE"))return hasHistory(c);if(section.equals("GUIDE TV"))return (c.type.equals("live")||c.type.equals("m3u"))&&!c.tvgId.isEmpty();String type=c.type==null?"":c.type;if(section.equals("TV EN DIRECT"))return type.equals("live")||type.equals("m3u");if(section.equals("FILMS"))return type.equals("movie")||g.contains("movie")||g.contains("film")||g.contains("vod");if(section.equals("SÉRIES"))return type.equals("series")||g.contains("series");if(section.equals("ANIMÉS"))return matchesAny(categoryText,"anime","animé","animes","animés","animation","animations","cartoon","cartoons","manga","mangas","toon","toons","kids animation","japanese animation","dessin animé","dessins animés","children animation");
         String categoryText=g+" "+n;
         if(section.equals("SPORTS"))return matchesAny(categoryText,"sport","football","soccer","basket","tennis","rugby","cricket","formula 1","f1","motogp","volley","boxing","wrestling");
         if(section.equals("CINÉMA"))return c.type.equals("movie")||matchesAny(categoryText,"cinema","cinéma","movie","film","vod");
@@ -943,7 +946,7 @@ private void loadAllPlaylists(boolean force){
         if(section.equals("ÉDUCATION"))return matchesAny(categoryText,"education","éducation","educational","learning","school","university","formation","cours");
         if(section.equals("RELIGION"))return matchesAny(categoryText,"religion","religious","gospel","church","islam","christ","faith","coran","bible");
         if(section.equals("SCIENCE & TECHNOLOGIE"))return matchesAny(categoryText,"science","technology","technologie","tech","innovation","engineering","informatique","space","astronomy");
-        if(section.equals("NOVELAS"))return matchesAny(categoryText,"novela","novelas","telenovela","soap opera","drama series");
+        if(section.equals("NOVELAS"))return matchesAny(categoryText,"novela","novelas","telenovela","telenovelas","tele novela","tele-novela","soap","soap opera","soap operas","drama series","latin drama","latino drama","series latina","series latinas","novela tv","mexican drama","spanish drama","drama latino");
         return true;}
     private boolean filterMatches(String filter,String group,String name){
         if(filter==null||filter.equals("Tout"))return true;
@@ -1290,6 +1293,32 @@ private void loadAllPlaylists(boolean force){
             more.setPadding(dp(8),dp(10),dp(8),dp(10));list.addView(more);
         }
     }
+    private MediaEntry mediaEntryFromCatalogRow(CatalogEntryEntity row){
+        if(row==null)return null;
+        MediaEntry entry=new MediaEntry(row.name,row.url,row.groupName,row.logo,row.type);
+        entry.id=row.entryId;entry.container=row.container;entry.tvgId=row.tvgId;entry.sourceId=row.sourceId;
+        entry.plot=row.plot;entry.rating=row.rating;entry.year=row.year;entry.duration=row.duration;
+        entry.genre=row.genre;entry.cast=row.cast;entry.director=row.director;
+        entry.seasonNumber=row.seasonNumber;entry.episodeNumber=row.episodeNumber;entry.seriesTitle=row.seriesTitle;
+        return entry;
+    }
+    private List<MediaEntry> getLocalDatabaseSnapshot(){
+        if(localDatabaseLoaded)return localDatabaseSnapshot;
+        synchronized(this){
+            if(localDatabaseLoaded)return localDatabaseSnapshot;
+            ArrayList<MediaEntry> cached=new ArrayList<>();
+            try{
+                CatalogDao dao=CatalogDatabase.getInstance(getApplicationContext()).catalogDao();
+                for(CatalogEntryEntity row:dao.allEntries(MAX_CATALOG_ITEMS)){
+                    MediaEntry entry=mediaEntryFromCatalogRow(row);
+                    if(entry!=null&&entry.url!=null&&!entry.url.isEmpty())cached.add(entry);
+                }
+            }catch(Exception error){android.util.Log.w("MTv-Catalog","Unable to read local catalogue",error);}
+            localDatabaseSnapshot=Collections.unmodifiableList(cached);
+            localDatabaseLoaded=true;
+            return localDatabaseSnapshot;
+        }
+    }
     private void publishCatalogSnapshot(){
         catalogSnapshot=Collections.unmodifiableList(new ArrayList<>(all));
     }
@@ -1309,6 +1338,8 @@ private void loadAllPlaylists(boolean force){
         List<MediaEntry> source=catalogSnapshot;
         final ArrayList<MediaEntry> sourceSnapshot=new ArrayList<>(source);
         final ArrayList<MediaEntry> databaseSnapshot=new ArrayList<>(databaseSearchResults);
+        final List<MediaEntry> localSectionSnapshot=universalSearch||sectionSnapshot.equals("MTV")||sectionSnapshot.equals("HISTORIQUE")||sectionSnapshot.equals("FAVORIS")
+            ?Collections.emptyList():getLocalDatabaseSnapshot();
         final HashSet<String> recentSnapshot=new HashSet<>(recentlyPlayable);
         final int sourceCount=all.size();
         if(search!=null){
@@ -1343,6 +1374,13 @@ private void loadAllPlaylists(boolean force){
                     if((++scanned&127)==0&&(request!=catalogRequestId||destroyed))return;
                     if(entry==null||entry.url==null||entry.url.isEmpty())continue;
                     if(!seenEntries.add(entry.url))continue;
+                    if(PROFILE_CHILD.equals(profileSnapshot)&&isAdultEntry(entry))continue;
+                    if(!matchSection(entry)||!filterMatches(filterSnapshot,entry.group,entry.name))continue;
+                    if(recentSnapshot.contains(entry.url))preferred.add(entry);else other.add(entry);
+                }
+                for(MediaEntry entry:localSectionSnapshot){
+                    if((++scanned&127)==0&&(request!=catalogRequestId||destroyed))return;
+                    if(entry==null||entry.url==null||entry.url.isEmpty()||!seenEntries.add(entry.url))continue;
                     if(PROFILE_CHILD.equals(profileSnapshot)&&isAdultEntry(entry))continue;
                     if(!matchSection(entry)||!filterMatches(filterSnapshot,entry.group,entry.name))continue;
                     if(recentSnapshot.contains(entry.url))preferred.add(entry);else other.add(entry);
